@@ -3,6 +3,120 @@
 
 ---
 
+## Project Purpose, Goals, and Design Diagrams 
+
+**Summary of the project's purpose and goals:**
+
+Geometry Dash's hardest levels ("Demons") span an enormous difficulty range, and the community-run GDDL assigns each demon a precise tier (1–35) to capture that range more accurately than the game's five built-in difficulty labels. However, tier alone doesn't tell a player *what skills* a level demands — two tier-15 levels can require completely different techniques (e.g. precision wave vs. memory cube). This means climbing the ladder by raw tier is unreliable: the next level above you might punish a skill you've never trained.
+
+The GDDL Demon Recommender solves this by building a semantic skill profile for every demon from its community-assigned tags (e.g. `wave`, `spam`, `straight fly`, `timings`), then matching a player's existing skill set — derived from the levels they've beaten — to demons at the right difficulty that will build toward the levels they want to conquer. The Chrome extension brings this directly into the gdladder.com experience without requiring a separate app.
+
+**Goals:**
+- Accurately model each demon's skill requirements using GDDL tag data and semantic embeddings.
+- Recommend the most skill-appropriate demon(s) for a given player, not just the nearest tier.
+- Surface recommendations in-context on gdladder.com via a Chrome extension.
+- Keep recommendations current with weekly syncs as community ratings evolve.
+
+---
+
+**Initial ERD sketching the data the project will use:**
+
+```mermaid
+erDiagram
+    LEVEL {
+        string  id          PK
+        string  name
+        int     tier
+        string  difficulty
+        float   enjoyment
+        string  creator
+    }
+
+    TAG {
+        string  name        PK
+        string  category
+    }
+
+    LEVEL_TAG {
+        string  level_id    FK
+        string  tag_name    FK
+    }
+
+    EMBEDDING {
+        string  level_id    PK, FK
+        json    vector
+        string  model_name
+        datetime updated_at
+    }
+
+    LEVEL ||--o{ LEVEL_TAG  : "has"
+    TAG   ||--o{ LEVEL_TAG  : "applied to"
+    LEVEL ||--|| EMBEDDING  : "embedded as"
+```
+
+> **Note:** In ChromaDB the `EMBEDDING` and `LEVEL_TAG` data are stored together as a single document (embedding vector + metadata). The ERD above reflects the logical relationships; there is no relational database in this project.
+
+---
+
+**A rough system design diagram (technologies as shapes, interactions as arrows):**
+
+```mermaid
+flowchart TD
+    subgraph Browser["Browser (gdladder.com)"]
+        Page["gdladder.com page\n(HTML)"]
+        CS["content.js\n(Content Script)"]
+        BG["background.js\n(Service Worker)"]
+        Popup["popup.html / popup.js\n(Extension Popup)"]
+        Page -->|DOM ready| CS
+        CS -->|sendMessage| BG
+        Popup -->|sendMessage| BG
+    end
+
+    subgraph Backend["Backend (localhost:8000)"]
+        API["FastAPI\nmain.py"]
+        Rec["recommender.py"]
+        Emb["embedder.py\nsentence-transformers"]
+        DB["ChromaDB\n(persistent local store)"]
+        API --> Rec
+        Rec --> Emb
+        Rec --> DB
+    end
+
+    subgraph Sync["Weekly Sync Job"]
+        SyncScript["sync.py"]
+        GDDLApi["GDDL API\n(gdladder.com/api)"]
+        SyncScript -->|"GET /api/demons"| GDDLApi
+        GDDLApi -->|level + tag data| SyncScript
+        SyncScript -->|embed + upsert| DB
+    end
+
+    BG -->|"POST /recommend\n(HTTP)"| API
+    API -->|recommendations JSON| BG
+    BG -->|response| CS
+    BG -->|response| Popup
+```
+
+---
+
+**Initial daily goals from now through April 10th (Appr. 11 days of work):**
+
+| Date | Goal | Est. Hours |
+|---|---|---|
+| Mar 26 | Project init: set up repo structure, write initial design doc, scaffold backend + extension files | 3 h |
+| Mar 27 | Inspect GDDL API live: fetch raw JSON, confirm actual field names and tag structure, update `gddl_client.py` accordingly | 2 h |
+| Mar 28 | Run full `sync.py` to populate ChromaDB; verify level count and spot-check stored embeddings | 2 h |
+| Mar 29 | Validate embedding quality: query ChromaDB manually and confirm similar-tag levels cluster together | 2 h |
+| Mar 31 | End-to-end API test: start FastAPI server, POST to `/recommend` with sample data, verify ranked results | 2 h |
+| Apr 1  | Chrome extension Phase 1: load as unpacked extension, confirm `content.js` injects on gdladder.com, inspect DOM for correct selectors | 3 h |
+| Apr 2  | Chrome extension Phase 2: popup full flow — tag selection → background.js relay → API → results rendered | 3 h |
+| Apr 3  | Skill inference: given only beaten level IDs, automatically derive skill profile without manual tag selection | 3 h |
+| Apr 7  | UI polish: tier filter UX, tag pill layout, injected panel styling tuned to gdladder.com theme | 2 h |
+| Apr 8  | Sync automation + stretch goals: Windows Task Scheduler setup; begin fine-tuning recommendation ranking if time permits | 2 h |
+| Apr 9–10 | End-to-end testing, edge cases (no tags, empty DB, offline API), final documentation pass | 3 h |
+
+
+---
+
 ## Architecture Overview
 
 The project is split into two layers:
