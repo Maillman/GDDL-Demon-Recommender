@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GDDL Demon Recommender</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <header>
+    <h1>Demon Recommender</h1>
+    <span id="status-badge" class="badge badge--checking">Checking...</span>
+  </header>
+
+  <section class="section">
+    <label for="beaten-input">Beaten Level IDs (comma-separated)</label>
+    <textarea id="beaten-input" rows="3" placeholder="e.g. 12345, 67890"></textarea>
+  </section>
+
+  <section class="section">
+    <label>Desired Skills</label>
+    <div id="tag-list" class="tag-list">
+      <!-- Tags populated by popup.js once API responds -->
+      <span class="tag-loading">Loading tags...</span>
+    </div>
+  </section>
+
+  <section class="section row">
+    <div class="field">
+      <label for="tier-min">Tier Min</label>
+      <input id="tier-min" type="number" min="1" max="35" placeholder="1" />
+    </div>
+    <div class="field">
+      <label for="tier-max">Tier Max</label>
+      <input id="tier-max" type="number" min="1" max="35" placeholder="35" />
+    </div>
+    <div class="field">
+      <label for="limit">Results</label>
+      <input id="limit" type="number" min="1" max="25" value="10" />
+    </div>
+  </section>
+
+  <button id="recommend-btn" class="btn-primary">Get Recommendations</button>
+
+  <section id="results" class="results hidden"></section>
+
+  <footer>
+    <a id="settings-link" href="#">Settings</a>
+  </footer>
+
+  <script src="popup.js"></script>
+</body>
+</html>

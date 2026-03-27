@@ -1,0 +1,42 @@
+#gddl-recommender-panel {
+  margin-top: 24px;
+  padding: 16px;
+  background: #1a1a2e;
+  border: 1px solid #444;
+  border-radius: 8px;
+  font-family: sans-serif;
+  color: #e0e0e0;
+}
+
+.gddl-panel-title {
+  margin: 0 0 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #a78bfa;
+}
+
+.gddl-rec-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.gddl-rec-item {
+  display: grid;
+  grid-template-columns: 1fr auto auto auto;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  background: #16213e;
+  border-radius: 4px;
+}
+
+.gddl-rec-name  { font-weight: 600; }
+.gddl-rec-tier  { color: #94a3b8; font-size: 0.85rem; }
+.gddl-rec-reason { color: #94a3b8; font-size: 0.8rem; grid-column: 1 / -1; }
+.gddl-rec-score { color: #34d399; font-size: 0.85rem; font-weight: 600; }
+
+.gddl-empty {
+  color: #94a3b8;
+  font-size: 0.9rem;
+}

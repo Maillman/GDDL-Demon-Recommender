@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "GDDL Demon Recommender",
+  "version": "0.1.0",
+  "description": "Recommends Geometry Dash demons based on your skillset using GDDL data.",
+  "permissions": ["storage"],
+  "host_permissions": [
+    "https://gdladder.com/*",
+    "http://localhost:8000/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://gdladder.com/*"],
+      "js": ["content.js"],
+      "css": ["content.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "GDDL Demon Recommender"
+  }
+}

@@ -1,0 +1,96 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  width: 340px;
+  min-height: 200px;
+  background: #0f0f1a;
+  color: #e0e0e0;
+  font-family: system-ui, sans-serif;
+  font-size: 13px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+h1 { font-size: 1rem; font-weight: 700; color: #a78bfa; }
+
+.badge {
+  font-size: 0.7rem;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-weight: 600;
+}
+.badge--ok       { background: #14532d; color: #34d399; }
+.badge--error    { background: #450a0a; color: #f87171; }
+.badge--checking { background: #1e293b; color: #94a3b8; }
+
+.section { display: flex; flex-direction: column; gap: 4px; }
+.section label { font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; letter-spacing: .05em; }
+
+textarea, input[type="number"] {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 4px;
+  color: #e0e0e0;
+  padding: 6px 8px;
+  font-size: 12px;
+  outline: none;
+  width: 100%;
+}
+textarea:focus, input:focus { border-color: #a78bfa; }
+
+.row { flex-direction: row; gap: 8px; }
+.field { display: flex; flex-direction: column; gap: 4px; flex: 1; }
+
+.tag-list { display: flex; flex-wrap: wrap; gap: 6px; }
+.tag {
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #1e293b;
+  border: 1px solid #334155;
+  cursor: pointer;
+  font-size: 0.75rem;
+  user-select: none;
+}
+.tag.selected { background: #4c1d95; border-color: #a78bfa; color: #a78bfa; }
+.tag-loading { color: #475569; font-size: 0.75rem; }
+
+.btn-primary {
+  background: #6d28d9;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+}
+.btn-primary:hover { background: #7c3aed; }
+.btn-primary:disabled { background: #334155; color: #64748b; cursor: not-allowed; }
+
+.results { display: flex; flex-direction: column; gap: 6px; }
+.results.hidden { display: none; }
+
+.rec-item {
+  background: #1e293b;
+  border-radius: 6px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.rec-name  { font-weight: 600; font-size: 0.85rem; }
+.rec-meta  { color: #94a3b8; font-size: 0.75rem; }
+.rec-score { color: #34d399; font-size: 0.75rem; font-weight: 600; }
+
+footer { text-align: right; }
+footer a { color: #475569; font-size: 0.75rem; text-decoration: none; }
+footer a:hover { color: #94a3b8; }
