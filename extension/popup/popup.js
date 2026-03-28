@@ -2,10 +2,12 @@
  * popup.js — Drives the extension popup UI.
  */
 
+// Tag names match the GDDL API exactly (from /api/level/{ID}/tags → Tag.Name).
 const KNOWN_TAGS = [
-  "wave", "straight fly", "ship", "cube", "ball", "ufo", "robot", "spider",
-  "spam", "timings", "flow", "precision", "memory", "gimmick", "platformer",
-  "mini", "dual",
+  "Cube", "Ship", "Ball", "UFO",
+  "Timings", "High CPS", "Flow", "Memory", "Nerve Control",
+  "Chokepoints", "Learny", "Gimmicky", "Overall",
+  "Fast-Paced", "Slow-Paced",
 ];
 
 const selectedTags = new Set();
@@ -72,8 +74,8 @@ recommendBtn.addEventListener("click", async () => {
   const payload = {
     beaten_level_ids: beatenIds,
     desired_tags: [...selectedTags],
-    tier_min: tierMinInput.value ? parseInt(tierMinInput.value) : null,
-    tier_max: tierMaxInput.value ? parseInt(tierMaxInput.value) : null,
+    tier_min: tierMinInput.value ? parseFloat(tierMinInput.value) : null,
+    tier_max: tierMaxInput.value ? parseFloat(tierMaxInput.value) : null,
     limit: parseInt(limitInput.value) || 10,
   };
 

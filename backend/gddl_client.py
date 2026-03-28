@@ -5,6 +5,7 @@ import httpx
 from models import Level
 
 BASE_URL = "https://gdladder.com/api"
+PAGE_SIZE = 25  # Maximum allowed by the API
 
 
 def _get_headers() -> dict:
@@ -13,37 +14,73 @@ def _get_headers() -> dict:
 
 
 def _parse_level(raw: dict) -> Level:
-    """Map a raw GDDL API response dict to a Level model.
+    """Map a raw /api/level/search item to a Level model.
 
-    NOTE: Field names here are placeholders until the actual GDDL API
-    response shape is confirmed in Phase 1 of the project.
+    Response shape (confirmed):
+      {
+        "ID": int,
+        "Rating": float,      # community difficulty rating — used as tier
+        "Enjoyment": float,
+        "Meta": {
+          "Name": str,
+          "Difficulty": str,  # category label: Easy/Medium/Hard/Insane/Extreme/Official
+          "Publisher": {"name": str} | null
+        }
+      }
+    Tags are NOT included here; fetch them separately with fetch_level_tags().
     """
-    tags: list[str] = raw.get("tags") or raw.get("skillsets") or []
+    meta = raw.get("Meta") or {}
+    publisher = meta.get("Publisher") or {}
     return Level(
-        id=str(raw.get("id") or raw.get("levelID", "")),
-        name=raw.get("name") or raw.get("levelName", "Unknown"),
-        tier=int(raw.get("tier", 0)),
-        difficulty=raw.get("difficulty") or raw.get("difficultyName", "Demon"),
-        tags=tags,
-        enjoyment=raw.get("enjoyment"),
-        creator=raw.get("creator") or raw.get("creatorName"),
+        id=str(raw.get("ID", "")),
+        name=meta.get("Name", "Unknown"),
+        tier=float(raw.get("Rating", 0)),
+        difficulty=meta.get("Difficulty", "Unknown"),
+        tags=[],
+        enjoyment=raw.get("Enjoyment"),
+        creator=publisher.get("name"),
     )
 
 
 async def fetch_all_levels() -> list[Level]:
-    """Fetch every level currently on the GDDL."""
+    """Fetch every level on the GDDL via paginated /api/level/search (max 25/page)."""
+    levels: list[Level] = []
+    page = 0
     async with httpx.AsyncClient(headers=_get_headers(), timeout=30.0) as client:
-        response = await client.get(f"{BASE_URL}/demons")
-        response.raise_for_status()
-        data = response.json()
-        # The API may return the list directly or wrapped in a key — handle both.
-        items: list[dict] = data if isinstance(data, list) else data.get("demons", data.get("data", []))
-        return [_parse_level(item) for item in items]
+        while True:
+            response = await client.get(
+                f"{BASE_URL}/level/search",
+                params={"limit": PAGE_SIZE, "page": page, "sort": "ID", "sortDirection": "asc"},
+            )
+            response.raise_for_status()
+            data = response.json()
+            items: list[dict] = data.get("levels", [])
+            if not items:
+                break
+            levels.extend(_parse_level(item) for item in items)
+            if len(levels) >= data.get("total", 0):
+                break
+            page += 1
+    return levels
 
 
 async def fetch_level(level_id: str) -> Level:
-    """Fetch a single level by its GDDL ID."""
+    """Fetch a single level by its Level ID."""
     async with httpx.AsyncClient(headers=_get_headers(), timeout=10.0) as client:
-        response = await client.get(f"{BASE_URL}/demons/{level_id}")
+        response = await client.get(f"{BASE_URL}/level/{level_id}")
         response.raise_for_status()
         return _parse_level(response.json())
+
+
+async def fetch_level_tags(level_id: str) -> list[str]:
+    """Fetch tag names for a level from /api/level/{ID}/tags.
+
+    Returns tag names sorted by community vote count (ReactCount) descending,
+    so the most-voted skillset appears first.
+    """
+    async with httpx.AsyncClient(headers=_get_headers(), timeout=10.0) as client:
+        response = await client.get(f"{BASE_URL}/level/{level_id}/tags")
+        response.raise_for_status()
+        items: list[dict] = response.json()
+        items.sort(key=lambda x: x.get("ReactCount", 0), reverse=True)
+        return [item["Tag"]["Name"] for item in items if item.get("Tag")]

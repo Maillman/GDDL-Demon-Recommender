@@ -4,7 +4,7 @@ from pydantic import BaseModel
 class Level(BaseModel):
     id: str
     name: str
-    tier: int
+    tier: float
     difficulty: str
     tags: list[str]
     enjoyment: float | None = None
@@ -14,8 +14,8 @@ class Level(BaseModel):
 class RecommendRequest(BaseModel):
     beaten_level_ids: list[str] = []
     desired_tags: list[str] = []
-    tier_min: int | None = None
-    tier_max: int | None = None
+    tier_min: float | None = None
+    tier_max: float | None = None
     limit: int = 10
 
 

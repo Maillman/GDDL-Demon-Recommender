@@ -10,7 +10,7 @@ def _metadata_to_level(level_id: str, meta: dict) -> Level:
     return Level(
         id=level_id,
         name=meta["name"],
-        tier=int(meta["tier"]),
+        tier=float(meta["tier"]),
         difficulty=meta["difficulty"],
         tags=[t for t in meta.get("tags", "").split(",") if t],
         enjoyment=meta.get("enjoyment") if meta.get("enjoyment", -1.0) >= 0 else None,
