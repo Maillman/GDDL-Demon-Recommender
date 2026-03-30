@@ -19,6 +19,18 @@ import embedder
 import db
 
 
+TAGS_CONCURRENCY = 10  # Max simultaneous tag-fetch requests
+
+
+async def _fetch_tags_for_levels(levels: list, semaphore: asyncio.Semaphore) -> None:
+    """Fetch tags in-place for each level, respecting the semaphore."""
+    async def _fetch_one(level) -> None:
+        async with semaphore:
+            level.tags = await gddl_client.fetch_level_tags(level.id)
+
+    await asyncio.gather(*(_fetch_one(lvl) for lvl in levels))
+
+
 async def run(dry_run: bool = False) -> None:
     print("Fetching levels from GDDL API...")
     levels = await gddl_client.fetch_all_levels()
@@ -26,9 +38,33 @@ async def run(dry_run: bool = False) -> None:
 
     if dry_run:
         for lvl in levels[:5]:
-            print(f"  Sample: {lvl.name!r} | tier={lvl.tier} | tags={lvl.tags}")
+            print(f"  Sample: {lvl.name!r} | tier={lvl.tier} | rating_count={lvl.rating_count}")
         print("Dry run — no data written.")
         return
+
+    print("Loading cached rating counts from DB...")
+    stored = db.get_stored_level_cache()
+
+    needs_tags: list = []
+    for lvl in levels:
+        cached = stored.get(lvl.id)
+        if cached is None:
+            # New level — must fetch tags
+            needs_tags.append(lvl)
+        elif cached["rating_count"] != lvl.rating_count:
+            # RatingCount changed — tags may have changed
+            needs_tags.append(lvl)
+        else:
+            # Unchanged — restore cached tags
+            lvl.tags = [t for t in cached["tags"].split(",") if t]
+
+    print(f"  {len(needs_tags)} levels need tag refresh, {len(levels) - len(needs_tags)} use cached tags.")
+
+    if needs_tags:
+        print("Fetching tags for changed/new levels...")
+        semaphore = asyncio.Semaphore(TAGS_CONCURRENCY)
+        await _fetch_tags_for_levels(needs_tags, semaphore)
+        print(f"  Done fetching tags.")
 
     print("Generating embeddings...")
     # Process in batches to avoid memory spikes

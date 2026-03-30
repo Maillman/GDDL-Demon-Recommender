@@ -9,6 +9,7 @@ class Level(BaseModel):
     tags: list[str]
     enjoyment: float | None = None
     creator: str | None = None
+    rating_count: int | None = None
 
 
 class RecommendRequest(BaseModel):

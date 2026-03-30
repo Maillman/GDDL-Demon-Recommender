@@ -40,6 +40,7 @@ def upsert_levels(levels: list[Level], embeddings: list[list[float]]) -> None:
                 "tags": ",".join(lvl.tags),
                 "enjoyment": lvl.enjoyment if lvl.enjoyment is not None else -1.0,
                 "creator": lvl.creator or "",
+                "rating_count": lvl.rating_count if lvl.rating_count is not None else -1,
             }
             for lvl in levels
         ],
@@ -62,6 +63,22 @@ def query(
 def get_by_ids(level_ids: list[str]) -> chromadb.GetResult:
     collection = get_collection()
     return collection.get(ids=level_ids, include=["embeddings", "metadatas"])
+
+
+def get_stored_level_cache() -> dict[str, dict]:
+    """Return a mapping of level_id -> {rating_count, tags} for all stored levels.
+
+    Used by sync.py to decide which levels need a tag refresh.
+    """
+    collection = get_collection()
+    result = collection.get(include=["metadatas"])
+    cache: dict[str, dict] = {}
+    for level_id, meta in zip(result["ids"], result["metadatas"]):
+        cache[level_id] = {
+            "rating_count": meta.get("rating_count", -1),
+            "tags": meta.get("tags", ""),
+        }
+    return cache
 
 
 def count() -> int:

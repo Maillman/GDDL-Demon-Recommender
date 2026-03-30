@@ -39,6 +39,7 @@ def _parse_level(raw: dict) -> Level:
         tags=[],
         enjoyment=raw.get("Enjoyment"),
         creator=publisher.get("name"),
+        rating_count=raw.get("RatingCount"),
     )
 
 
