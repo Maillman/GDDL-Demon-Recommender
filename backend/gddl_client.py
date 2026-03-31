@@ -1,16 +1,36 @@
 """Client for the GDDL (Geometry Dash Demon Ladder) API."""
 
+import asyncio
 import os
 import httpx
 from models import Level
 
 BASE_URL = "https://gdladder.com/api"
 PAGE_SIZE = 25  # Maximum allowed by the API
+# Stay safely under the 100 req/min limit
+_REQUEST_DELAY = 0.7  # seconds between paginated requests
+_MAX_RETRIES = 5
 
 
 def _get_headers() -> dict:
     api_key = os.getenv("GDDL_API_KEY", "")
     return {"Authorization": f"Bearer {api_key}"} if api_key else {}
+
+
+async def _get_with_retry(client: httpx.AsyncClient, url: str, **kwargs) -> httpx.Response:
+    """GET with exponential backoff on 429 Too Many Requests."""
+    for attempt in range(_MAX_RETRIES):
+        response = await client.get(url, **kwargs)
+        if response.status_code != 429:
+            response.raise_for_status()
+            return response
+        retry_after = response.headers.get("Retry-After")
+        wait = float(retry_after) if retry_after else 2 ** attempt
+        await asyncio.sleep(wait)
+    # Final attempt — let raise_for_status surface the error
+    response = await client.get(url, **kwargs)
+    response.raise_for_status()
+    return response
 
 
 def _parse_level(raw: dict) -> Level:
@@ -34,7 +54,7 @@ def _parse_level(raw: dict) -> Level:
     return Level(
         id=str(raw.get("ID", "")),
         name=meta.get("Name", "Unknown"),
-        tier=float(raw.get("Rating", 0)),
+        tier=float(raw.get("Rating") or 0),
         difficulty=meta.get("Difficulty", "Unknown"),
         tags=[],
         enjoyment=raw.get("Enjoyment"),
@@ -49,11 +69,13 @@ async def fetch_all_levels() -> list[Level]:
     page = 0
     async with httpx.AsyncClient(headers=_get_headers(), timeout=30.0) as client:
         while True:
-            response = await client.get(
+            if page > 0:
+                await asyncio.sleep(_REQUEST_DELAY)
+            response = await _get_with_retry(
+                client,
                 f"{BASE_URL}/level/search",
                 params={"limit": PAGE_SIZE, "page": page, "sort": "ID", "sortDirection": "asc"},
             )
-            response.raise_for_status()
             data = response.json()
             items: list[dict] = data.get("levels", [])
             if not items:
@@ -68,8 +90,7 @@ async def fetch_all_levels() -> list[Level]:
 async def fetch_level(level_id: str) -> Level:
     """Fetch a single level by its Level ID."""
     async with httpx.AsyncClient(headers=_get_headers(), timeout=10.0) as client:
-        response = await client.get(f"{BASE_URL}/level/{level_id}")
-        response.raise_for_status()
+        response = await _get_with_retry(client, f"{BASE_URL}/level/{level_id}")
         return _parse_level(response.json())
 
 
@@ -80,8 +101,7 @@ async def fetch_level_tags(level_id: str) -> list[str]:
     so the most-voted skillset appears first.
     """
     async with httpx.AsyncClient(headers=_get_headers(), timeout=10.0) as client:
-        response = await client.get(f"{BASE_URL}/level/{level_id}/tags")
-        response.raise_for_status()
+        response = await _get_with_retry(client, f"{BASE_URL}/level/{level_id}/tags")
         items: list[dict] = response.json()
         items.sort(key=lambda x: x.get("ReactCount", 0), reverse=True)
         return [item["Tag"]["Name"] for item in items if item.get("Tag")]
