@@ -14,7 +14,7 @@ class Level(BaseModel):
 
 class RecommendRequest(BaseModel):
     beaten_level_ids: list[str] = []
-    desired_tags: list[str] = []
+    desired_tags: dict[str, float] = {}  # tag name -> fraction (0.0–1.0)
     tier_min: float | None = None
     tier_max: float | None = None
     limit: int = 10

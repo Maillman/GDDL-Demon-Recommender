@@ -28,13 +28,15 @@ def _build_query_vector(
     # Average the embeddings of all beaten levels
     if request.beaten_level_ids:
         result = db.get_by_ids(request.beaten_level_ids)
-        embeddings = result.get("embeddings") or []
+        embeddings = result.get("embeddings", [])
         vecs.extend(embeddings)
 
-    # Embed the desired-tag string if provided
+    # Embed the desired-tag string if provided, repeating tags proportionally
     if request.desired_tags:
-        tag_text = " ".join(request.desired_tags)
-        vecs.append(embed_text(tag_text))
+        words: list[str] = []
+        for tag_name, weight in request.desired_tags.items():
+            words.extend([tag_name] * max(1, round(weight * 10)))
+        vecs.append(embed_text(" ".join(words)))
 
     # Fall back to a generic query if nothing was provided
     if not vecs:

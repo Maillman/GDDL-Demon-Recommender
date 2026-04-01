@@ -14,24 +14,21 @@ def _get_model() -> SentenceTransformer:
 
 
 def level_to_text(level: Level) -> str:
-    """Convert a level's metadata into a natural-language string for embedding.
+    """Convert a level's tag profile into a text string for embedding.
 
-    Tags are repeated proportionally to their ReactCount share so that
-    dominant skillsets have greater influence on the embedding vector.
-    A scale of 10 is used: a tag with 30% of votes appears 3 times,
-    while every tag gets at least 1 occurrence.
+    Only tags are encoded — level name and tier are excluded because they add
+    noise without improving skill-based similarity. Each tag is repeated
+    proportionally to its ReactCount share (scale=20), so a tag with 35% of
+    votes appears 7 times while minor tags appear at least once.
     """
     if level.tags:
         words: list[str] = []
         for tag_name, weight in level.tags.items():
-            words.extend([tag_name] * max(1, round(weight * 10)))
+            words.extend([tag_name] * max(1, round(weight * 20)))
         tag_str = " ".join(words)
     else:
         tag_str = "unknown"
-    return (
-        f"{level.name} tier {level.tier} {level.difficulty} demon "
-        f"skills: {tag_str}"
-    )
+    return f"demon level skills: {tag_str}"
 
 
 def embed_levels(levels: list[Level]) -> list[list[float]]:

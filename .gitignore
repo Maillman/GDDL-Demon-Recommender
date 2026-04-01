@@ -20,3 +20,6 @@ build/
 # OS
 .DS_Store
 Thumbs.db
+
+# Cache Files
+backend/sync_checkpoint.json
