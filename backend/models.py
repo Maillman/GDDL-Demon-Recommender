@@ -6,7 +6,7 @@ class Level(BaseModel):
     name: str
     tier: float
     difficulty: str
-    tags: list[str]
+    tags: dict[str, float] = {}  # tag name -> fraction of total ReactCount (0.0–1.0)
     enjoyment: float | None = None
     creator: str | None = None
     rating_count: int | None = None

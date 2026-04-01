@@ -1,0 +1,120 @@
+Currrently Stored As:
+{
+    "levels": [
+        {
+            "id": "1",
+            "name": "Clubstep",
+            "tier": 2.820486143951575,
+            "difficulty": "Official",
+            "tags": [
+                "Ship",
+                "Nerve Control",
+                "UFO",
+                "Chokepoints",
+                "Memory",
+                "Learny",
+                "Overall",
+                "Timings",
+                "Cube",
+                "Slow-Paced",
+                "Ball",
+                "High CPS",
+                "Flow",
+                "Gimmicky",
+                "Fast-Paced"
+            ],
+            "enjoyment": 6.589957366177167,
+            "creator": "RobTop",
+            "rating_count": 10716
+        },
+        {
+            "id": "2",
+            "name": "Theory of Everything 2",
+            "tier": 3.0324165029469548,
+            "difficulty": "Official",
+            "tags": [
+                "Ship",
+                "Overall",
+                "Memory",
+                "Chokepoints",
+                "Nerve Control",
+                "UFO",
+                "Wave",
+                "Learny",
+                "Fast-Paced",
+                "Cube",
+                "Timings",
+                "Ball",
+                "High CPS",
+                "Slow-Paced",
+                "Flow",
+                "Gimmicky"
+            ],
+            "enjoyment": 7.077092268778181,
+            "creator": "RobTop",
+            "rating_count": 9304
+        },
+        ...
+    ]
+}
+
+
+Would Like To Store As:
+{
+    "levels": [
+        {
+            "id": "1",
+            "name": "Clubstep",
+            "tier": 2.820486143951575,
+            "difficulty": "Official",
+            "tags": [
+                "Ship": 0.23,
+                "Nerve Control": 0.15,
+                "UFO": 0.08,
+                "Chokepoints": 0.05,
+                "Memory": ...,
+                "Learny": ...,
+                "Overall": ...,
+                "Timings": ...,
+                "Cube": ...,
+                "Slow-Paced": ...,
+                "Ball": ...,
+                "High CPS": ...,
+                "Flow": ...,
+                "Gimmicky": ...,
+                "Fast-Paced": ...
+            ],
+            "enjoyment": 6.589957366177167,
+            "creator": "RobTop",
+            "rating_count": 10716
+        },
+        {
+            "id": "2",
+            "name": "Theory of Everything 2",
+            "tier": 3.0324165029469548,
+            "difficulty": "Official",
+            "tags": [
+                "Ship": ...,
+                "Overall": ...,
+                "Memory": ...,
+                "Chokepoints": ...,
+                "Nerve Control": ...,
+                "UFO": ...,
+                "Wave": ...,
+                "Learny": ...,
+                "Fast-Paced": ...,
+                "Cube": ...,
+                "Timings": ...,
+                "Ball": ...,
+                "High CPS": ...,
+                "Slow-Paced": ...,
+                "Flow": ...,
+                "Gimmicky": ...
+            ],
+            "enjoyment": 7.077092268778181,
+            "creator": "RobTop",
+            "rating_count": 9304
+        },
+        ...
+    ]
+}

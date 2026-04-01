@@ -56,7 +56,7 @@ def _parse_level(raw: dict) -> Level:
         name=meta.get("Name", "Unknown"),
         tier=float(raw.get("Rating") or 0),
         difficulty=meta.get("Difficulty", "Unknown"),
-        tags=[],
+        tags={},
         enjoyment=raw.get("Enjoyment"),
         creator=publisher.get("name"),
         rating_count=raw.get("RatingCount"),
@@ -94,14 +94,22 @@ async def fetch_level(level_id: str) -> Level:
         return _parse_level(response.json())
 
 
-async def fetch_level_tags(level_id: str) -> list[str]:
-    """Fetch tag names for a level from /api/level/{ID}/tags.
+async def fetch_level_tags(level_id: str) -> dict[str, float]:
+    """Fetch tags for a level and return each tag's share of total ReactCount.
 
-    Returns tag names sorted by community vote count (ReactCount) descending,
-    so the most-voted skillset appears first.
+    Returns a dict mapping tag name -> fraction (0.0–1.0) of total community
+    votes, so that the most-voted skillset has the highest weight.
     """
     async with httpx.AsyncClient(headers=_get_headers(), timeout=10.0) as client:
         response = await _get_with_retry(client, f"{BASE_URL}/level/{level_id}/tags")
-        items: list[dict] = response.json()
-        items.sort(key=lambda x: x.get("ReactCount", 0), reverse=True)
-        return [item["Tag"]["Name"] for item in items if item.get("Tag")]
+        items: list[dict] = [item for item in response.json() if item.get("Tag")]
+        total = sum(item.get("ReactCount", 0) for item in items)
+        if not items:
+            return {}
+        if total == 0:
+            equal_share = 1.0 / len(items)
+            return {item["Tag"]["Name"]: equal_share for item in items}
+        return {
+            item["Tag"]["Name"]: item.get("ReactCount", 0) / total
+            for item in items
+        }

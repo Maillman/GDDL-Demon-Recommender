@@ -16,10 +16,18 @@ def _get_model() -> SentenceTransformer:
 def level_to_text(level: Level) -> str:
     """Convert a level's metadata into a natural-language string for embedding.
 
-    The sentence transformer will embed this text. The quality of recommendations
-    depends heavily on how well this text captures the level's skill requirements.
+    Tags are repeated proportionally to their ReactCount share so that
+    dominant skillsets have greater influence on the embedding vector.
+    A scale of 10 is used: a tag with 30% of votes appears 3 times,
+    while every tag gets at least 1 occurrence.
     """
-    tag_str = " ".join(level.tags) if level.tags else "unknown"
+    if level.tags:
+        words: list[str] = []
+        for tag_name, weight in level.tags.items():
+            words.extend([tag_name] * max(1, round(weight * 10)))
+        tag_str = " ".join(words)
+    else:
+        tag_str = "unknown"
     return (
         f"{level.name} tier {level.tier} {level.difficulty} demon "
         f"skills: {tag_str}"

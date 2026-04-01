@@ -32,7 +32,7 @@ import db
 from models import Level
 
 
-TAGS_CONCURRENCY = 10       # Max simultaneous tag-fetch requests
+TAGS_CONCURRENCY = 1       # Max simultaneous tag-fetch requests
 CHECKPOINT_SAVE_INTERVAL = 50  # Save checkpoint after every N tag fetches
 CHECKPOINT_FILE = os.getenv("SYNC_CHECKPOINT_FILE", "sync_checkpoint.json")
 
@@ -44,11 +44,17 @@ CHECKPOINT_FILE = os.getenv("SYNC_CHECKPOINT_FILE", "sync_checkpoint.json")
 def _load_checkpoint() -> dict | None:
     if os.path.exists(CHECKPOINT_FILE):
         with open(CHECKPOINT_FILE) as f:
-            return json.load(f)
+            data = json.load(f)
+        # Detect old checkpoint format where tags_fetched stored lists instead of dicts.
+        tags = data.get("tags_fetched", {})
+        if tags and isinstance(next(iter(tags.values())), list):
+            print("  Old checkpoint format detected (tags as list); discarding and starting fresh.")
+            return None
+        return data
     return None
 
 
-def _save_checkpoint(levels: list[Level], tags_fetched: dict[str, list[str]]) -> None:
+def _save_checkpoint(levels: list[Level], tags_fetched: dict[str, dict[str, float]]) -> None:
     """Write checkpoint atomically so a crash mid-write can't corrupt it."""
     tmp = CHECKPOINT_FILE + ".tmp"
     with open(tmp, "w") as f:
@@ -74,7 +80,7 @@ def _clear_checkpoint() -> None:
 
 async def _fetch_tags_with_progress(
     needs_tags: list[Level],
-    tags_fetched: dict[str, list[str]],
+    tags_fetched: dict[str, dict[str, float]],
     all_levels: list[Level],
     semaphore: asyncio.Semaphore,
 ) -> None:
@@ -125,7 +131,7 @@ async def run(dry_run: bool = False) -> None:
     if checkpoint:
         print(f"Resuming from checkpoint: {CHECKPOINT_FILE}")
         levels = [Level(**lvl) for lvl in checkpoint["levels"]]
-        tags_fetched: dict[str, list[str]] = checkpoint.get("tags_fetched", {})
+        tags_fetched: dict[str, dict[str, float]] = checkpoint.get("tags_fetched", {})
         print(f"  Loaded {len(levels)} levels, {len(tags_fetched)} already have tags.")
     else:
         print("Fetching levels from GDDL API...")
@@ -155,7 +161,7 @@ async def run(dry_run: bool = False) -> None:
             if cached is None or cached["rating_count"] != lvl.rating_count:
                 needs_tags.append(lvl)
             else:
-                lvl.tags = [t for t in cached["tags"].split(",") if t]
+                lvl.tags = json.loads(cached["tags"]) if cached.get("tags") else {}
 
     already_done = len(levels) - len(needs_tags)
     print(f"  {len(needs_tags)} levels need tag fetch, {already_done} use cached/checkpoint tags.")

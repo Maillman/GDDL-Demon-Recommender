@@ -1,5 +1,6 @@
 """Core recommendation logic."""
 
+import json
 import numpy as np
 from embedder import embed_text
 from models import Level, RecommendedLevel, RecommendRequest
@@ -12,7 +13,7 @@ def _metadata_to_level(level_id: str, meta: dict) -> Level:
         name=meta["name"],
         tier=float(meta["tier"]),
         difficulty=meta["difficulty"],
-        tags=[t for t in meta.get("tags", "").split(",") if t],
+        tags=json.loads(meta.get("tags", "{}")),
         enjoyment=meta.get("enjoyment") if meta.get("enjoyment", -1.0) >= 0 else None,
         creator=meta.get("creator") or None,
     )

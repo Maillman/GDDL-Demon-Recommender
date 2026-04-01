@@ -1,5 +1,6 @@
 """ChromaDB setup and helpers."""
 
+import json
 import os
 from functools import lru_cache
 import chromadb
@@ -37,7 +38,7 @@ def upsert_levels(levels: list[Level], embeddings: list[list[float]]) -> None:
                 "name": lvl.name,
                 "tier": lvl.tier,
                 "difficulty": lvl.difficulty,
-                "tags": ",".join(lvl.tags),
+                "tags": json.dumps(lvl.tags),
                 "enjoyment": lvl.enjoyment if lvl.enjoyment is not None else -1.0,
                 "creator": lvl.creator or "",
                 "rating_count": lvl.rating_count if lvl.rating_count is not None else -1,
