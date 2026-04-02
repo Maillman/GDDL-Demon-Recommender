@@ -63,3 +63,18 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   // Return true to keep the message channel open for the async response
   return true;
 });
+
+/**
+ * SPA navigation handler — gdladder.com uses pushState routing, so the
+ * content script only runs once on initial page load.  Re-inject it
+ * whenever the History API signals an in-page navigation.
+ */
+chrome.webNavigation.onHistoryStateUpdated.addListener(
+  (details) => {
+    chrome.scripting.executeScript({
+      target: { tabId: details.tabId },
+      files: ["content.js"],
+    });
+  },
+  { url: [{ hostEquals: "gdladder.com" }] }
+);

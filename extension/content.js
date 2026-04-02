@@ -13,6 +13,9 @@
 (function () {
   "use strict";
 
+  const PANEL_ID = "gddl-recommender-panel";
+  const TARGET_WAIT_TIMEOUT_MS = 10000;
+
   /** Attempt to read the level ID from the current URL or page DOM. */
   function getCurrentLevelId() {
     // e.g. https://gdladder.com/level/12345
@@ -20,38 +23,90 @@
     return match ? match[1] : null;
   }
 
-  /** Inject the recommendation panel into the page. */
-  function injectPanel(recommendations) {
-    const existing = document.getElementById("gddl-recommender-panel");
-    if (existing) existing.remove();
+  /** Find the element that should receive the panel. */
+  function findInjectionTarget() {
+    const main = document.querySelector("main");
+    if (!main) {
+      return null;
+    }
 
+    const mainTarget = main.querySelector("div") || main;
+    return mainTarget.querySelectorAll("div")[0] || mainTarget;
+  }
+
+  /** Wait for the target element to exist before mounting the panel. */
+  function waitForInjectionTarget(onReady) {
+    const target = findInjectionTarget();
+    if (target) {
+      onReady(target);
+      return;
+    }
+
+    const observer = new MutationObserver(() => {
+      const nextTarget = findInjectionTarget();
+      if (!nextTarget) {
+        return;
+      }
+
+      observer.disconnect();
+      clearTimeout(timeoutId);
+      onReady(nextTarget);
+    });
+
+    observer.observe(document.documentElement, {
+      childList: true,
+      subtree: true,
+    });
+
+    const timeoutId = window.setTimeout(() => {
+      observer.disconnect();
+      onReady(document.body);
+    }, TARGET_WAIT_TIMEOUT_MS);
+  }
+
+  /** Build the recommendation panel markup. */
+  function createPanel(recommendations) {
     const panel = document.createElement("div");
-    panel.id = "gddl-recommender-panel";
+    panel.id = PANEL_ID;
 
     if (!recommendations || recommendations.length === 0) {
       panel.innerHTML = `<p class="gddl-empty">No recommendations found. Run a sync or adjust your filters.</p>`;
-    } else {
-      const items = recommendations
-        .map(
-          ({ level, score, reason }) => `
-          <div class="gddl-rec-item">
+      return panel;
+    }
+
+    const items = recommendations
+      .map(
+        ({ level, score, reason }) => `
+          <a class="gddl-rec-item" href="https://gdladder.com/level/${level.id}" rel="noopener noreferrer">
             <span class="gddl-rec-name">${level.name}</span>
             <span class="gddl-rec-tier">Tier ${level.tier.toFixed(2)}</span>
             <span class="gddl-rec-reason">${reason}</span>
             <span class="gddl-rec-score">${(score * 100).toFixed(0)}% Match</span>
-          </div>`
-        )
-        .join("");
-      panel.innerHTML = `
-        <h3 class="gddl-panel-title">Recommended Demons</h3>
-        <div class="gddl-rec-list">${items}</div>`;
-    }
+          </a>`
+      )
+      .join("");
 
-    // Append to main content area — selector needs verification against live site
-    const main = document.querySelector("main") || document.body;
-    const mainTarget = main.querySelector("div") || main;
-    const target = mainTarget.querySelectorAll("div")[0] || mainTarget;
-    target.after(panel);
+    panel.innerHTML = `
+      <h3 class="gddl-panel-title">Recommended Demons</h3>
+      <div class="gddl-rec-list">${items}</div>`;
+    return panel;
+  }
+
+  /** Inject the recommendation panel into the page. */
+  function injectPanel(recommendations) {
+    const panel = createPanel(recommendations);
+
+    waitForInjectionTarget((target) => {
+      const existing = document.getElementById(PANEL_ID);
+      if (existing) existing.remove();
+      
+      if (!target.isConnected) {
+        document.body.appendChild(panel);
+        return;
+      }
+
+      target.after(panel);
+    });
   }
 
   /** Request recommendations from the backend (via background.js). */

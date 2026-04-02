@@ -23,6 +23,29 @@ const limitInput      = document.getElementById("limit");
 const recommendBtn    = document.getElementById("recommend-btn");
 const resultsEl       = document.getElementById("results");
 
+// Open recommendation links in the currently active tab instead of creating a new one.
+resultsEl.addEventListener("click", async (event) => {
+  const link = event.target.closest("a.rec-item");
+  if (!link) return;
+
+  event.preventDefault();
+  const url = link.href;
+
+  try {
+    const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+    const activeTab = tabs[0];
+    if (activeTab?.id !== undefined) {
+      await chrome.tabs.update(activeTab.id, { url });
+      window.close();
+      return;
+    }
+  } catch (err) {
+    console.error("Failed to reuse active tab:", err);
+  }
+
+  chrome.tabs.create({ url });
+});
+
 // --- Init ---
 checkHealth();
 renderTags();
@@ -125,12 +148,12 @@ recommendBtn.addEventListener("click", async () => {
       resultsEl.innerHTML = recs
         .map(
           ({ level, score, reason }) => `
-          <div class="rec-item">
+          <a class="rec-item" href="https://gdladder.com/level/${level.id}">
             <span class="rec-name">${level.name}</span>
             <span class="rec-meta">Tier ${level.tier.toFixed(2)} · ${level.difficulty} Demon · ${Object.keys(level.tags).join(", ") || "no tags"}</span>
             <span class="rec-meta">${reason}</span>
             <span class="rec-score">${(score * 100).toFixed(0)}% Match</span>
-          </div>`
+          </a>`
         )
         .join("");
     }

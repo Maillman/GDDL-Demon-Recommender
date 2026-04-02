@@ -3,7 +3,7 @@
   "name": "GDDL Demon Recommender",
   "version": "0.1.0",
   "description": "Recommends Geometry Dash demons based on your skillset using GDDL data.",
-  "permissions": ["storage"],
+  "permissions": ["storage", "scripting", "webNavigation", "tabs"],
   "host_permissions": [
     "https://gdladder.com/*",
     "http://localhost:8000/*"

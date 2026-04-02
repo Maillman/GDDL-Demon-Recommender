@@ -126,6 +126,13 @@ input[type="range"]::-moz-range-thumb {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.rec-item:hover {
+  background: #263b55;
 }
 .rec-name  { font-weight: 600; font-size: 0.85rem; }
 .rec-meta  { color: #94a3b8; font-size: 0.75rem; }
