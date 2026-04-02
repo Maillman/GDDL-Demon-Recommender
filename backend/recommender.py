@@ -35,7 +35,7 @@ def _build_query_vector(
     if request.desired_tags:
         words: list[str] = []
         for tag_name, weight in request.desired_tags.items():
-            words.extend([tag_name] * max(1, round(weight * 10)))
+            words.extend([tag_name] * max(1, round(weight * 20)))
         vecs.append(embed_text(" ".join(words)))
 
     # Fall back to a generic query if nothing was provided
