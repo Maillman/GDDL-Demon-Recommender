@@ -15,8 +15,8 @@
 
   /** Attempt to read the level ID from the current URL or page DOM. */
   function getCurrentLevelId() {
-    // e.g. https://gdladder.com/demons/12345
-    const match = window.location.pathname.match(/\/demons\/(\d+)/);
+    // e.g. https://gdladder.com/level/12345
+    const match = window.location.pathname.match(/\/level\/(\d+)/);
     return match ? match[1] : null;
   }
 
@@ -48,15 +48,17 @@
     }
 
     // Append to main content area — selector needs verification against live site
-    const target = document.querySelector("main") || document.body;
-    target.appendChild(panel);
+    const main = document.querySelector("main") || document.body;
+    const mainTarget = main.querySelector("div") || main;
+    const target = mainTarget.querySelectorAll("div")[0] || mainTarget;
+    target.after(panel);
   }
 
   /** Request recommendations from the backend (via background.js). */
   function fetchRecommendations(levelId) {
     const payload = {
       beaten_level_ids: [],
-      desired_tags: [],
+      desired_tags: {},
       limit: 10,
     };
 

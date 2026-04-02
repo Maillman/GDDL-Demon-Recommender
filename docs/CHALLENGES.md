@@ -5,5 +5,5 @@
 ## Embedding Quality
 **The Problem:** The query results are returning levels that aren't really desired after ["verifying"](#Notes) the levels the query results returning.
 **The Solution:** Remove the name, difficulty tier, and category of the level from the embedding. Also repeat the more dominant tags several times in the embedding to ensure that they have more influence over the query results.
-## Notes
+## Additional Notes
 1. The word "verifying" in the Geometry Dash community refers to a person who first beats a level and confirms the level is humanly possible. I am NOT using the word in that context!
