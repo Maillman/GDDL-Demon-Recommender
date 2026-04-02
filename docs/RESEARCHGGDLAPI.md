@@ -1379,3 +1379,36 @@ curl -X 'GET' \
   }
 ]
 ```
+## `/api/user/{userID}/skills`
+I'm not exactly sure how the GDDL calculates the skill distribution for a user. There isn't any documentation or information about it anywhere as far as I can tell! However, after comparing the returned numbers with the hardest levels I've beaten in the game, I think it's pretty accurate. I think it would probably be more accurate than if we were try to implement the skill distribution ourselves. There are also query parameters for normalizing for tier correction and adjusting for the rarity of the skill, which can change the results quite a bit. **NOTE:** I actually used my own userID for the Curl command.
+`Curl Command`:
+```
+curl -X 'GET' \
+  'https://gdladder.com/api/user/13876/skills?tierCorrection=true&adjustRarity=true' \
+  -H 'accept: */*'
+```
+`Response Body`:
+```
+{
+  "1": 0.0004104946426602619,
+  "2": 0.002692151746561829,
+  "3": 0.0003274910671042119,
+  "4": 0.0003445225353903591,
+  "5": 0.0036607691380530563,
+  "6": 0.00009723927694002188,
+  "7": 0.0002110172023537946,
+  "8": 0.0039524319431119784,
+  "9": 0.001061678169348391,
+  "10": 0.0059076265275035495,
+  "11": 0.0043291649001883144,
+  "12": 0.0037187147603004386,
+  "13": 0.0032355726751109827,
+  "14": 0.00386118988408521,
+  "15": 0.003845048958911891,
+  "16": 0.0008004959646569831,
+  "17": 0.0008894580375534088,
+  "18": 0.002936135099434482,
+  "19": 0.0015194005625750306,
+  "20": 0.0004838253520660121
+}
+```

@@ -5,5 +5,8 @@
 ## Embedding Quality
 **The Problem:** The query results are returning levels that aren't really desired after ["verifying"](#Notes) the levels the query results returning.
 **The Solution:** Remove the name, difficulty tier, and category of the level from the embedding. Also repeat the more dominant tags several times in the embedding to ensure that they have more influence over the query results.
+## GDDL SPA Conflicting With Loading Content
+**The Problem:** The https://gdladder.com/ is a Single-Page Application. This isn't so much of a problem until you want to start injecting content to it with content scripts. The content scripts only get run once when the page initially loads, and subsequent navigations do not re-trigger these scripts because the browser does not perform a full page refresh.
+**The Solution:** Have a service worker background script detect navigation events and reinitalize the needed content scripts.
 ## Additional Notes
 1. The word "verifying" in the Geometry Dash community refers to a person who first beats a level and confirms the level is humanly possible. I am NOT using the word in that context!
