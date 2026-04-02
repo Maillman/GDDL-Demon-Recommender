@@ -63,8 +63,8 @@ def _tier_filter(request: RecommendRequest) -> dict | None:
 def _make_reason(level: Level, request: RecommendRequest) -> str:
     matching_tags = [t for t in level.tags if t in request.desired_tags]
     if matching_tags:
-        return f"Matches desired skills: {', '.join(matching_tags)}. Tier {level.tier}."
-    return f"Similar skillset to your beaten levels. Tier {level.tier}."
+        return f"Matches desired skills: {', '.join(matching_tags)}."
+    return f"Similar skillset to your beaten levels."
 
 
 def recommend(request: RecommendRequest) -> list[RecommendedLevel]:

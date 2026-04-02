@@ -4,13 +4,14 @@
 
 // Tag names match the GDDL API exactly (from /api/level/{ID}/tags → Tag.Name).
 const KNOWN_TAGS = [
-  "Cube", "Ship", "Ball", "UFO",
+  "Cube", "Ship", "Ball", "UFO", "Wave", "Robot", "Spider", "Swing",
   "Timings", "High CPS", "Flow", "Memory", "Nerve Control",
-  "Chokepoints", "Learny", "Gimmicky", "Overall",
+  "Duals", "Chokepoints", "Learny", "Gimmicky", "Overall",
   "Fast-Paced", "Slow-Paced",
 ];
 
-const selectedTags = new Set();
+// tag name -> raw slider value (0–100)
+const tagWeights = {};
 
 // --- DOM refs ---
 const statusBadge     = document.getElementById("status-badge");
@@ -44,23 +45,38 @@ function setStatus(state, text) {
   statusBadge.className = `badge badge--${state}`;
 }
 
-// --- Tag pills ---
+// --- Tag sliders ---
 function renderTags() {
   tagListEl.innerHTML = "";
   KNOWN_TAGS.forEach((tag) => {
-    const pill = document.createElement("span");
-    pill.className = "tag";
-    pill.textContent = tag;
-    pill.addEventListener("click", () => {
-      if (selectedTags.has(tag)) {
-        selectedTags.delete(tag);
-        pill.classList.remove("selected");
-      } else {
-        selectedTags.add(tag);
-        pill.classList.add("selected");
-      }
+    tagWeights[tag] = 0;
+
+    const row = document.createElement("div");
+    row.className = "slider-row";
+
+    const label = document.createElement("span");
+    label.className = "slider-label";
+    label.textContent = tag;
+
+    const slider = document.createElement("input");
+    slider.type = "range";
+    slider.min = "0";
+    slider.max = "100";
+    slider.value = "0";
+
+    const valueDisplay = document.createElement("span");
+    valueDisplay.className = "slider-value";
+    valueDisplay.textContent = "0";
+
+    slider.addEventListener("input", () => {
+      tagWeights[tag] = parseInt(slider.value);
+      valueDisplay.textContent = slider.value;
     });
-    tagListEl.appendChild(pill);
+
+    row.appendChild(label);
+    row.appendChild(slider);
+    row.appendChild(valueDisplay);
+    tagListEl.appendChild(row);
   });
 }
 
@@ -71,9 +87,17 @@ recommendBtn.addEventListener("click", async () => {
     .map((s) => s.trim())
     .filter(Boolean);
 
+  const total = Object.values(tagWeights).reduce((a, b) => a + b, 0);
+  const desired_tags = {};
+  if (total > 0) {
+    for (const [tag, weight] of Object.entries(tagWeights)) {
+      if (weight > 0) desired_tags[tag] = weight / total;
+    }
+  }
+
   const payload = {
     beaten_level_ids: beatenIds,
-    desired_tags: [...selectedTags],
+    desired_tags,
     tier_min: tierMinInput.value ? parseFloat(tierMinInput.value) : null,
     tier_max: tierMaxInput.value ? parseFloat(tierMaxInput.value) : null,
     limit: parseInt(limitInput.value) || 10,
@@ -103,9 +127,9 @@ recommendBtn.addEventListener("click", async () => {
           ({ level, score, reason }) => `
           <div class="rec-item">
             <span class="rec-name">${level.name}</span>
-            <span class="rec-meta">Tier ${level.tier} · ${level.difficulty} · ${level.tags.join(", ") || "no tags"}</span>
+            <span class="rec-meta">Tier ${level.tier.toFixed(2)} · ${level.difficulty} Demon · ${Object.keys(level.tags).join(", ") || "no tags"}</span>
             <span class="rec-meta">${reason}</span>
-            <span class="rec-score">${(score * 100).toFixed(0)}% match</span>
+            <span class="rec-score">${(score * 100).toFixed(0)}% Match</span>
           </div>`
         )
         .join("");

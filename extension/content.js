@@ -36,9 +36,9 @@
           ({ level, score, reason }) => `
           <div class="gddl-rec-item">
             <span class="gddl-rec-name">${level.name}</span>
-            <span class="gddl-rec-tier">Tier ${level.tier}</span>
+            <span class="gddl-rec-tier">Tier ${level.tier.toFixed(2)}</span>
             <span class="gddl-rec-reason">${reason}</span>
-            <span class="gddl-rec-score">${(score * 100).toFixed(0)}% match</span>
+            <span class="gddl-rec-score">${(score * 100).toFixed(0)}% Match</span>
           </div>`
         )
         .join("");
