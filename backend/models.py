@@ -13,6 +13,7 @@ class Level(BaseModel):
 
 
 class RecommendRequest(BaseModel):
+    user_id: str | None = None  # GDDL user ID; if provided, beaten levels + skills are fetched automatically
     beaten_level_ids: list[str] = []
     desired_tags: dict[str, float] = {}  # tag name -> fraction (0.0–1.0)
     tier_min: float | None = None

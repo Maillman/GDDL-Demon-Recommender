@@ -7,6 +7,15 @@ from models import Level
 
 BASE_URL = "https://gdladder.com/api"
 PAGE_SIZE = 25  # Maximum allowed by the API
+
+# Static mapping of GDDL tag IDs to tag names (from /api/tags)
+_TAG_ID_TO_NAME: dict[str, str] = {
+    "1": "Cube", "2": "Ship", "3": "Ball", "4": "UFO", "5": "Wave",
+    "6": "Robot", "7": "Spider", "20": "Swing", "8": "Nerve Control",
+    "9": "Memory", "10": "Learny", "11": "Duals", "12": "Chokepoints",
+    "13": "High CPS", "14": "Timings", "15": "Flow", "16": "Overall",
+    "17": "Gimmicky", "18": "Fast-Paced", "19": "Slow-Paced",
+}
 # Stay safely under the 100 req/min limit
 _REQUEST_DELAY = 0.7  # seconds between paginated requests
 _MAX_RETRIES = 5
@@ -92,6 +101,57 @@ async def fetch_level(level_id: str) -> Level:
     async with httpx.AsyncClient(headers=_get_headers(), timeout=10.0) as client:
         response = await _get_with_retry(client, f"{BASE_URL}/level/{level_id}")
         return _parse_level(response.json())
+
+
+async def fetch_user_beaten_level_ids(user_id: str) -> list[str]:
+    """Fetch all level IDs a user has submitted ratings for (proxy for beaten levels)."""
+    level_ids: list[str] = []
+    page = 0
+    async with httpx.AsyncClient(headers=_get_headers(), timeout=30.0) as client:
+        while True:
+            if page > 0:
+                await asyncio.sleep(_REQUEST_DELAY)
+            response = await _get_with_retry(
+                client,
+                f"{BASE_URL}/user/{user_id}/submissions",
+                params={"limit": PAGE_SIZE, "page": page},
+            )
+            data = response.json()
+            submissions: list[dict] = data.get("submissions", [])
+            if not submissions:
+                break
+            level_ids.extend(str(s["Level"]["ID"]) for s in submissions if s.get("Level"))
+            if len(level_ids) >= data.get("total", 0):
+                break
+            page += 1
+    return level_ids
+
+
+async def fetch_user_skills(user_id: str) -> dict[str, float]:
+    """Fetch a user's skill distribution from GDDL and return tag name -> normalized score (0–1).
+
+    Uses tierCorrection and adjustRarity for the most accurate skill estimate.
+    Scores are normalized so the sum of all skills = 1.0.
+    """
+    async with httpx.AsyncClient(headers=_get_headers(), timeout=10.0) as client:
+        response = await _get_with_retry(
+            client,
+            f"{BASE_URL}/user/{user_id}/skills",
+            params={"tierCorrection": "true", "adjustRarity": "true"},
+        )
+        raw: dict[str, float] = response.json()
+
+    named = {
+        _TAG_ID_TO_NAME[tag_id]: score
+        for tag_id, score in raw.items()
+        if tag_id in _TAG_ID_TO_NAME
+    }
+    if not named:
+        return {}
+    sum_score = sum(named.values())
+    if sum_score == 0:
+        return named
+    return {name: score / sum_score for name, score in named.items()}
 
 
 async def fetch_level_tags(level_id: str) -> dict[str, float]:
