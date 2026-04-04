@@ -103,7 +103,7 @@ async def fetch_level(level_id: str) -> Level:
         return _parse_level(response.json())
 
 
-async def fetch_user_beaten_level_ids(user_id: str) -> list[str]:
+async def fetch_user_beaten_level_ids(user_id: int) -> list[str]:
     """Fetch all level IDs a user has submitted ratings for (proxy for beaten levels)."""
     level_ids: list[str] = []
     page = 0
@@ -127,7 +127,7 @@ async def fetch_user_beaten_level_ids(user_id: str) -> list[str]:
     return level_ids
 
 
-async def fetch_user_skills(user_id: str) -> dict[str, float]:
+async def fetch_user_skills(user_id: int) -> dict[str, float]:
     """Fetch a user's skill distribution from GDDL and return tag name -> normalized score (0–1).
 
     Uses tierCorrection and adjustRarity for the most accurate skill estimate.

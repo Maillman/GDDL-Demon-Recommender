@@ -23,8 +23,9 @@ chrome.runtime.onInstalled.addListener(() => {
  * API calls without dealing with CORS directly.
  *
  * Expected message shapes:
- *   { type: "RECOMMEND", payload: RecommendRequest }
- *   { type: "GET_LEVEL",  payload: { levelId: string } }
+ *   { type: "RECOMMEND",    payload: RecommendRequest }
+ *   { type: "GET_LEVEL",    payload: { levelId: string } }
+ *   { type: "GET_USER_ID" }
  */
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   chrome.storage.local.get("apiUrl", async ({ apiUrl }) => {
@@ -43,6 +44,10 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
         response = await fetch(`${base}/levels/${message.payload.levelId}`);
       } else if (message.type === "HEALTH") {
         response = await fetch(`${base}/health`);
+      } else if (message.type === "GET_USER_ID") {
+        response = await fetch("https://gdladder.com/api/user/me", {
+          credentials: "include",
+        });
       } else {
         sendResponse({ error: `Unknown message type: ${message.type}` });
         return;

@@ -110,17 +110,20 @@
   }
 
   /** Request recommendations from the backend (via background.js). */
-  function fetchRecommendations(levelId) {
+  async function fetchRecommendations(levelId) {
+    // Try to get the logged-in user's ID; falls back to null if not logged in.
+    let userId = null;
+    try {
+      const userResp = await chrome.runtime.sendMessage({ type: "GET_USER_ID" });
+      userId = userResp?.data?.ID ?? null;
+    } catch (_) {}
+
     const payload = {
-      beaten_level_ids: [],
+      user_id: userId,
+      beaten_level_ids: levelId ? [levelId] : [],
       desired_tags: {},
       limit: 10,
     };
-
-    // If we're on a level page, use that level's neighbors as context
-    if (levelId) {
-      payload.beaten_level_ids = [levelId];
-    }
 
     chrome.runtime.sendMessage({ type: "RECOMMEND", payload }, (response) => {
       if (chrome.runtime.lastError || response?.error) {

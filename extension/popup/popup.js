@@ -118,7 +118,15 @@ recommendBtn.addEventListener("click", async () => {
     }
   }
 
+  // Try to get the logged-in user's ID; falls back to null if not logged in.
+  let userId = null;
+  try {
+    const userResp = await chrome.runtime.sendMessage({ type: "GET_USER_ID" });
+    userId = userResp?.data?.ID ?? null;
+  } catch (_) {}
+
   const payload = {
+    user_id: userId,
     beaten_level_ids: beatenIds,
     desired_tags,
     tier_min: tierMinInput.value ? parseFloat(tierMinInput.value) : null,
