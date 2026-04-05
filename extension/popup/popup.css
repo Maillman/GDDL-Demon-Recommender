@@ -1,11 +1,95 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
+:root {
+  --color-tier-0: #360432;
+  --color-tier-1: #dddfee;
+  --color-tier-2: #d5d3e9;
+  --color-tier-3: #d3cbe7;
+  --color-tier-4: #d3c3e4;
+  --color-tier-5: #d4bbe2;
+  --color-tier-6: #d5b0de;
+  --color-tier-7: #dba7dc;
+  --color-tier-8: #db9fd1;
+  --color-tier-9: #d991c1;
+  --color-tier-10: #da86b0;
+  --color-tier-11: #db7698;
+  --color-tier-12: #dc6a7d;
+  --color-tier-13: #dd5a5a;
+  --color-tier-14: #dc514c;
+  --color-tier-15: #da493e;
+  --color-tier-16: #da4534;
+  --color-tier-17: #d93e26;
+  --color-tier-18: #dc3f23;
+  --color-tier-19: #c03a1b;
+  --color-tier-20: #b23415;
+  --color-tier-21: #a23010;
+  --color-tier-22: #9b2b0c;
+  --color-tier-23: #932b0b;
+  --color-tier-24: #892608;
+  --color-tier-25: #832607;
+  --color-tier-26: #752105;
+  --color-tier-27: #6c1e04;
+  --color-tier-28: #601a02;
+  --color-tier-29: #5a1802;
+  --color-tier-30: #521700;
+  --color-tier-31: #4f0a01;
+  --color-tier-32: #4a0207;
+  --color-tier-33: #470313;
+  --color-tier-34: #42041e;
+  --color-tier-35: #400427;
+  --color-tier-36: #3d0630;
+  --color-tier-37: #380635;
+  --color-tier-38: #300636;
+  --color-tier-39: #250630;
+}
+
+.tier-0 { background-color: var(--color-tier-0); }
+.tier-1 { background-color: var(--color-tier-1); }
+.tier-2 { background-color: var(--color-tier-2); }
+.tier-3 { background-color: var(--color-tier-3); }
+.tier-4 { background-color: var(--color-tier-4); }
+.tier-5 { background-color: var(--color-tier-5); }
+.tier-6 { background-color: var(--color-tier-6); }
+.tier-7 { background-color: var(--color-tier-7); }
+.tier-8 { background-color: var(--color-tier-8); }
+.tier-9 { background-color: var(--color-tier-9); }
+.tier-10 { background-color: var(--color-tier-10); }
+.tier-11 { background-color: var(--color-tier-11); }
+.tier-12 { background-color: var(--color-tier-12); }
+.tier-13 { background-color: var(--color-tier-13); }
+.tier-14 { background-color: var(--color-tier-14); }
+.tier-15 { background-color: var(--color-tier-15); }
+.tier-16 { background-color: var(--color-tier-16); }
+.tier-17 { background-color: var(--color-tier-17); }
+.tier-18 { background-color: var(--color-tier-18); }
+.tier-19 { background-color: var(--color-tier-19); }
+.tier-20 { background-color: var(--color-tier-20); }
+.tier-21 { background-color: var(--color-tier-21); }
+.tier-22 { background-color: var(--color-tier-22); }
+.tier-23 { background-color: var(--color-tier-23); }
+.tier-24 { background-color: var(--color-tier-24); }
+.tier-25 { background-color: var(--color-tier-25); }
+.tier-26 { background-color: var(--color-tier-26); }
+.tier-27 { background-color: var(--color-tier-27); }
+.tier-28 { background-color: var(--color-tier-28); }
+.tier-29 { background-color: var(--color-tier-29); }
+.tier-30 { background-color: var(--color-tier-30); }
+.tier-31 { background-color: var(--color-tier-31); }
+.tier-32 { background-color: var(--color-tier-32); }
+.tier-33 { background-color: var(--color-tier-33); }
+.tier-34 { background-color: var(--color-tier-34); }
+.tier-35 { background-color: var(--color-tier-35); }
+.tier-36 { background-color: var(--color-tier-36); }
+.tier-37 { background-color: var(--color-tier-37); }
+.tier-38 { background-color: var(--color-tier-38); }
+.tier-39 { background-color: var(--color-tier-39); }
+
 body {
   width: 340px;
   min-height: 200px;
   background: #0f0f1a;
   color: #e0e0e0;
-  font-family: system-ui, sans-serif;
+  font-family: Outfit, Montserrat, sans-serif;
   font-size: 13px;
   padding: 12px;
   display: flex;
@@ -120,21 +204,37 @@ input[type="range"]::-moz-range-thumb {
 .results.hidden { display: none; }
 
 .rec-item {
-  background: #1e293b;
   border-radius: 6px;
   padding: 8px 10px;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 6px;
   text-decoration: none;
   color: inherit;
   cursor: pointer;
-  transition: background 0.15s ease;
+  position: relative; /* Required for the overlay to align correctly */
+  overflow: hidden; /* Ensures the tint stays within rounded corners if used */
+  z-index: 1;
 }
-.rec-item:hover {
-  background: #263b55;
+/* Create the white tint layer */
+.rec-item::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.3); /* White with 30% opacity */
+  opacity: 0; /* Hidden by default */
+  transition: opacity 0.15s ease; /* Smooth fade effect */
+  pointer-events: none; /* Allows clicks to pass through to content */
+  z-index: -1; /* Places gradient behind text but above base background */
 }
-.rec-name  { font-weight: 600; font-size: 0.85rem; }
+/* Show the tint on hover */
+.rec-item:hover::after {
+  opacity: 1;
+}
+.rec-name  { color: #000000; font-weight: 600; font-size: 0.85rem; }
 .rec-meta  { color: #4a5565; font-size: 0.75rem; }
 .rec-score { color: #05df72; font-size: 0.75rem; font-weight: 600; }
 

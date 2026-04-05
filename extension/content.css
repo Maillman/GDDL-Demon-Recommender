@@ -30,11 +30,27 @@
   text-decoration: none;
   color: inherit;
   cursor: pointer;
-  transition: background-image 0.3s ease-in-out;
-  background-image: linear-gradient(rgba(255, 255, 255, 0), rgba(255, 255, 255, 0));
+  position: relative; /* Required for the overlay to align correctly */
+  overflow: hidden; /* Ensures the tint stays within rounded corners if used */
+  z-index: 1;
 }
-.gddl-rec-item:hover {
-  background-image: linear-gradient(rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.3))
+/* Create the white tint layer */
+.gddl-rec-item::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.3); /* White with 30% opacity */
+  opacity: 0; /* Hidden by default */
+  transition: opacity 0.15s ease; /* Smooth fade effect */
+  pointer-events: none; /* Allows clicks to pass through to content */
+  z-index: -1; /* Places gradient behind text but above base background */
+}
+/* Show the tint on hover */
+.gddl-rec-item:hover::after {
+  opacity: 1;
 }
 
 .gddl-rec-name  { font-weight: 600; }

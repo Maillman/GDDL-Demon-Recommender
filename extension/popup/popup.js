@@ -156,7 +156,7 @@ recommendBtn.addEventListener("click", async () => {
       resultsEl.innerHTML = recs
         .map(
           ({ level, score, reason }) => `
-          <a class="rec-item" href="https://gdladder.com/level/${level.id}">
+          <a class="rec-item tier-${Math.round(level.tier)}" href="https://gdladder.com/level/${level.id}">
             <span class="rec-name">${level.name}</span>
             <span class="rec-meta">Tier ${level.tier.toFixed(2)} · ${level.difficulty} Demon · ${Object.keys(level.tags).slice(0, 3).join(", ") || "no tags"}</span>
             <span class="rec-meta">${reason}</span>

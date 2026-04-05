@@ -12,3 +12,4 @@
 | 4/02/2026 | 4 hours | Chrome extension Phase 2: popup full flow — tag selection → background.js relay → API → results rendered. Research GDDL API and documentation for skill distribution endpoint and accuracy |
 | 4/03/2026 | 2.5 hours | Retrieve beaten levels and skill distribution using user id |
 | 4/04/2026 | 2 hours | UI polish: injected panel styling tuned to gdladder.com theme |
+| 4/04/2026 | 1 hours | UI polish: popup styling tuned to gdladder.com theme |
