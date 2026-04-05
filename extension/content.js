@@ -77,7 +77,7 @@
     const items = recommendations
       .map(
         ({ level, score, reason }) => `
-          <a class="gddl-rec-item" href="https://gdladder.com/level/${level.id}" rel="noopener noreferrer">
+          <a class="gddl-rec-item tier-${Math.round(level.tier)}" href="https://gdladder.com/level/${level.id}" rel="noopener noreferrer">
             <span class="gddl-rec-name">${level.name}</span>
             <span class="gddl-rec-tier">Tier ${level.tier.toFixed(2)}</span>
             <span class="gddl-rec-reason">${reason}</span>

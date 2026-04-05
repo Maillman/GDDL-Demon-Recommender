@@ -135,8 +135,8 @@ input[type="range"]::-moz-range-thumb {
   background: #263b55;
 }
 .rec-name  { font-weight: 600; font-size: 0.85rem; }
-.rec-meta  { color: #94a3b8; font-size: 0.75rem; }
-.rec-score { color: #34d399; font-size: 0.75rem; font-weight: 600; }
+.rec-meta  { color: #4a5565; font-size: 0.75rem; }
+.rec-score { color: #05df72; font-size: 0.75rem; font-weight: 600; }
 
 footer { text-align: right; }
 footer a { color: #475569; font-size: 0.75rem; text-decoration: none; }

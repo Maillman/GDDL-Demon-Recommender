@@ -2,9 +2,7 @@
   margin-top: 24px;
   padding: 16px;
   background: #1a1a2e;
-  border: 1px solid #444;
   border-radius: 8px;
-  font-family: sans-serif;
   color: #e0e0e0;
 }
 
@@ -27,21 +25,22 @@
   align-items: center;
   gap: 8px;
   padding: 8px;
-  background: #16213e;
+  background-color: transparent;
   border-radius: 4px;
   text-decoration: none;
   color: inherit;
   cursor: pointer;
-  transition: background 0.15s ease;
+  transition: background-image 0.3s ease-in-out;
+  background-image: linear-gradient(rgba(255, 255, 255, 0), rgba(255, 255, 255, 0));
 }
 .gddl-rec-item:hover {
-  background: #1e3a5f;
+  background-image: linear-gradient(rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.3))
 }
 
 .gddl-rec-name  { font-weight: 600; }
-.gddl-rec-tier  { color: #94a3b8; font-size: 0.85rem; }
-.gddl-rec-reason { color: #94a3b8; font-size: 0.8rem; grid-column: 1 / -1; }
-.gddl-rec-score { color: #34d399; font-size: 0.85rem; font-weight: 600; }
+.gddl-rec-tier  { color: #4a5565; font-size: 0.85rem; }
+.gddl-rec-reason { color: #4a5565; font-size: 0.8rem; grid-column: 1 / -1; }
+.gddl-rec-score { color: #05df72; font-size: 0.85rem; font-weight: 600; }
 
 .gddl-empty {
   color: #94a3b8;

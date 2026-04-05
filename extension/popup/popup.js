@@ -158,7 +158,7 @@ recommendBtn.addEventListener("click", async () => {
           ({ level, score, reason }) => `
           <a class="rec-item" href="https://gdladder.com/level/${level.id}">
             <span class="rec-name">${level.name}</span>
-            <span class="rec-meta">Tier ${level.tier.toFixed(2)} · ${level.difficulty} Demon · ${Object.keys(level.tags).join(", ") || "no tags"}</span>
+            <span class="rec-meta">Tier ${level.tier.toFixed(2)} · ${level.difficulty} Demon · ${Object.keys(level.tags).slice(0, 3).join(", ") || "no tags"}</span>
             <span class="rec-meta">${reason}</span>
             <span class="rec-score">${(score * 100).toFixed(0)}% Match</span>
           </a>`
