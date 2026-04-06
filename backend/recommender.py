@@ -22,21 +22,37 @@ def _metadata_to_level(level_id: str, meta: dict) -> Level:
 def _build_query_vector(
     request: RecommendRequest,
 ) -> list[float]:
-    """Combine beaten-level embeddings and desired-tag text into one query vector."""
+    """Combine reference-level embedding and/or desired-tag text into one query vector.
+
+    Explicit mode (level_id or desired_tags provided): use only those inputs.
+    Profile mode (neither provided): use the user's beaten levels + skill distribution.
+    """
     vecs: list[list[float]] = []
 
-    # Average the embeddings of all beaten levels
-    if request.beaten_level_ids:
-        result = db.get_by_ids(request.beaten_level_ids)
-        embeddings = result.get("embeddings", [])
-        vecs.extend(embeddings)
+    if request.level_id or request.desired_tags:
+        # Explicit mode: embed the single reference level
+        if request.level_id:
+            result = db.get_by_ids([request.level_id])
+            vecs.extend(result.get("embeddings", []))
 
-    # Embed the desired-tag string if provided, repeating tags proportionally
-    if request.desired_tags:
-        words: list[str] = []
-        for tag_name, weight in request.desired_tags.items():
-            words.extend([tag_name] * max(1, round(weight * 20)))
-        vecs.append(embed_text(" ".join(words)))
+        # Embed desired-tag text, repeating tags proportionally to weight
+        if request.desired_tags:
+            words: list[str] = []
+            for tag_name, weight in request.desired_tags.items():
+                words.extend([tag_name] * max(1, round(weight * 20)))
+            vecs.append(embed_text(" ".join(words)))
+    else:
+        # Profile mode: average embeddings of the user's beaten levels
+        if request.user_beaten_ids:
+            result = db.get_by_ids(request.user_beaten_ids)
+            vecs.extend(result.get("embeddings", []))
+
+        # Include the user's skill distribution
+        if request.user_skills:
+            words = []
+            for tag_name, weight in request.user_skills.items():
+                words.extend([tag_name] * max(1, round(weight * 20)))
+            vecs.append(embed_text(" ".join(words)))
 
     # Fall back to a generic query if nothing was provided
     if not vecs:
@@ -62,10 +78,13 @@ def _tier_filter(request: RecommendRequest) -> dict | None:
 
 def _make_reason(level: Level, request: RecommendRequest, max_tags: int = 3) -> str:
     top_tags = list(level.tags)[:max_tags]
-    matching_tags = [t for t in top_tags if t in request.desired_tags]
+    query_tags = request.desired_tags or request.user_skills
+    matching_tags = [t for t in top_tags if t in query_tags]
     if matching_tags:
         return f"Matches desired skills: {', '.join(matching_tags)}."
-    return f"Similar skillset to your beaten levels."
+    if request.level_id:
+        return f"Similar to this level."
+    return f"Similar skillset to your profile."
 
 
 def recommend(request: RecommendRequest) -> list[RecommendedLevel]:
@@ -86,7 +105,7 @@ def recommend(request: RecommendRequest) -> list[RecommendedLevel]:
     metadatas = results.get("metadatas", [[]])[0]
     distances = results.get("distances", [[]])[0]
 
-    beaten_set = set(request.beaten_level_ids)
+    beaten_set = set(request.user_beaten_ids) if not request.show_beaten else set()
 
     for level_id, meta, dist in zip(ids, metadatas, distances):
         if level_id in beaten_set:

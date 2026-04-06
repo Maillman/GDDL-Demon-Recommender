@@ -45,23 +45,29 @@ async def health() -> dict:
 @app.post("/recommend", response_model=RecommendResponse)
 async def recommend(request: RecommendRequest) -> RecommendResponse:
     if request.user_id:
+        # Use the user's profile data for similarity only when no explicit inputs are provided
+        use_user_profile = not request.level_id and not request.desired_tags
         try:
-            user_beaten_ids, user_skills = await asyncio.gather(
-                gddl_client.fetch_user_beaten_level_ids(request.user_id),
-                gddl_client.fetch_user_skills(request.user_id),
-            )
+            if use_user_profile:
+                user_beaten_ids, user_skills = await asyncio.gather(
+                    gddl_client.fetch_user_beaten_level_ids(request.user_id),
+                    gddl_client.fetch_user_skills(request.user_id),
+                )
+            else:
+                user_beaten_ids = await gddl_client.fetch_user_beaten_level_ids(request.user_id)
+                user_skills = {}
         except Exception as exc:
             raise HTTPException(status_code=502, detail=f"Failed to fetch user data: {exc}")
 
-        # Merge user data with any manually provided values (manual values take precedence for tags)
-        merged_beaten = list(set(request.beaten_level_ids) | set(user_beaten_ids))
-        merged_tags = {**user_skills, **request.desired_tags}
-        request = request.model_copy(update={"beaten_level_ids": merged_beaten, "desired_tags": merged_tags})
+        request = request.model_copy(update={
+            "user_beaten_ids": user_beaten_ids,
+            "user_skills": user_skills,
+        })
 
-    if not request.beaten_level_ids and not request.desired_tags:
+    if not request.level_id and not request.desired_tags and not request.user_id:
         raise HTTPException(
             status_code=400,
-            detail="Provide at least one beaten level ID, desired tag, or user_id.",
+            detail="Provide a level ID, desired tags, or user_id.",
         )
     results = recommender.recommend(request)
     return RecommendResponse(recommendations=results)

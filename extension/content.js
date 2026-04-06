@@ -5,9 +5,6 @@
  *  - Detect what page the user is on (level page vs. profile page).
  *  - Extract relevant data from the DOM (beaten levels, current level ID).
  *  - Inject a recommendation panel when appropriate.
- *
- * NOTE: The DOM selectors here are placeholders. They need to be updated
- * once the actual gdladder.com HTML structure is inspected (Phase 4).
  */
 
 (function () {
@@ -120,7 +117,7 @@
 
     const payload = {
       user_id: userId,
-      beaten_level_ids: levelId ? [levelId] : [],
+      level_id: levelId ?? null,
       desired_tags: {},
       limit: 10,
     };

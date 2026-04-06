@@ -13,8 +13,15 @@
   </header>
 
   <section class="section">
-    <label for="beaten-input">Beaten Level IDs (comma-separated)</label>
-    <textarea id="beaten-input" rows="3" placeholder="e.g. 12345, 67890"></textarea>
+    <label for="level-id-input">Reference Level ID (optional)</label>
+    <input id="level-id-input" type="text" placeholder="e.g. 12345" />
+  </section>
+
+  <section class="section row">
+    <label class="checkbox-label">
+      <input id="show-beaten-input" type="checkbox" />
+      Show already-beaten levels in results
+    </label>
   </section>
 
   <section class="section">

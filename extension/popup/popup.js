@@ -14,14 +14,15 @@ const KNOWN_TAGS = [
 const tagWeights = {};
 
 // --- DOM refs ---
-const statusBadge     = document.getElementById("status-badge");
-const beatenInput     = document.getElementById("beaten-input");
-const tagListEl       = document.getElementById("tag-list");
-const tierMinInput    = document.getElementById("tier-min");
-const tierMaxInput    = document.getElementById("tier-max");
-const limitInput      = document.getElementById("limit");
-const recommendBtn    = document.getElementById("recommend-btn");
-const resultsEl       = document.getElementById("results");
+const statusBadge      = document.getElementById("status-badge");
+const levelIdInput     = document.getElementById("level-id-input");
+const showBeatenInput  = document.getElementById("show-beaten-input");
+const tagListEl        = document.getElementById("tag-list");
+const tierMinInput     = document.getElementById("tier-min");
+const tierMaxInput     = document.getElementById("tier-max");
+const limitInput       = document.getElementById("limit");
+const recommendBtn     = document.getElementById("recommend-btn");
+const resultsEl        = document.getElementById("results");
 
 // Open recommendation links in the currently active tab instead of creating a new one.
 resultsEl.addEventListener("click", async (event) => {
@@ -105,10 +106,7 @@ function renderTags() {
 
 // --- Recommend ---
 recommendBtn.addEventListener("click", async () => {
-  const beatenIds = beatenInput.value
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean);
+  const levelId = levelIdInput.value.trim() || null;
 
   const total = Object.values(tagWeights).reduce((a, b) => a + b, 0);
   const desired_tags = {};
@@ -127,8 +125,9 @@ recommendBtn.addEventListener("click", async () => {
 
   const payload = {
     user_id: userId,
-    beaten_level_ids: beatenIds,
+    level_id: levelId,
     desired_tags,
+    show_beaten: showBeatenInput.checked,
     tier_min: tierMinInput.value ? parseFloat(tierMinInput.value) : null,
     tier_max: tierMaxInput.value ? parseFloat(tierMaxInput.value) : null,
     limit: parseInt(limitInput.value) || 10,
