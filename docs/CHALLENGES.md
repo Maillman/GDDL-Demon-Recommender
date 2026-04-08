@@ -8,5 +8,8 @@
 ## GDDL SPA Conflicting With Loading Content
 **The Problem:** The https://gdladder.com/ is a Single-Page Application. This isn't so much of a problem until you want to start injecting content to it with content scripts. The content scripts only get run once when the page initially loads, and subsequent navigations do not re-trigger these scripts because the browser does not perform a full page refresh.
 **The Solution:** Have a service worker background script detect navigation events and reinitalize the needed content scripts.
+## GDDL API Calls With Retrieving Beaten Levels and Skill Distribution
+**The Problem:** Currently, every RecommendRequest with a `user_id` needs to call the GDDL API to retrieve beaten levels and skill distributions. This not only causes the endpoint to take a significantly longer time to process. It also sends multiple unnecessary API calls for the same user whose beaten levels and skill distribution stay the same.
+**The Solution:** Make the API calls in the chrome extension and cache the results as cookies. Only making further API calls and updating the cookies when the `SubmissionCount` from the response from `/api/user/me` has changed.
 ## Additional Notes
 1. The word "verifying" in the Geometry Dash community refers to a person who first beats a level and confirms the level is humanly possible. I am NOT using the word in that context!

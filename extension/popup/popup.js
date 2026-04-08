@@ -116,21 +116,24 @@ recommendBtn.addEventListener("click", async () => {
     }
   }
 
-  // Try to get the logged-in user's ID; falls back to null if not logged in.
-  let userId = null;
+  // Try to get the logged-in user's beaten levels and skills; falls back to empty if not logged in.
+  let beatenIds = [];
+  let userSkills = {};
   try {
-    const userResp = await chrome.runtime.sendMessage({ type: "GET_USER_ID" });
-    userId = userResp?.data?.ID ?? null;
+    const userResp = await chrome.runtime.sendMessage({ type: "GET_USER_DATA" });
+    beatenIds = userResp?.data?.beatenIds ?? [];
+    userSkills = userResp?.data?.skills ?? {};
   } catch (_) {}
 
   const payload = {
-    user_id: userId,
     level_id: levelId,
     desired_tags,
     show_beaten: showBeatenInput.checked,
     tier_min: tierMinInput.value ? parseFloat(tierMinInput.value) : null,
     tier_max: tierMaxInput.value ? parseFloat(tierMaxInput.value) : null,
     limit: parseInt(limitInput.value) || 10,
+    user_beaten_ids: beatenIds,
+    user_skills: userSkills,
   };
 
   recommendBtn.disabled = true;

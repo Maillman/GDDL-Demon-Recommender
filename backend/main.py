@@ -1,6 +1,5 @@
 """FastAPI backend for the GDDL Demon Recommender."""
 
-import asyncio
 from contextlib import asynccontextmanager
 from dotenv import load_dotenv
 
@@ -44,33 +43,14 @@ async def health() -> dict:
 
 @app.post("/recommend", response_model=RecommendResponse)
 async def recommend(request: RecommendRequest) -> RecommendResponse:
-    if request.user_id:
-        # Use the user's profile data for similarity only when no explicit inputs are provided
-        use_user_profile = not request.level_id and not request.desired_tags
-        try:
-            if use_user_profile:
-                user_beaten_ids, user_skills = await asyncio.gather(
-                    gddl_client.fetch_user_beaten_level_ids(request.user_id),
-                    gddl_client.fetch_user_skills(request.user_id),
-                )
-            else:
-                user_beaten_ids = await gddl_client.fetch_user_beaten_level_ids(request.user_id)
-                user_skills = {}
-        except Exception as exc:
-            raise HTTPException(status_code=502, detail=f"Failed to fetch user data: {exc}")
-
-        request = request.model_copy(update={
-            "user_beaten_ids": user_beaten_ids,
-            "user_skills": user_skills,
-        })
-
-    if not request.level_id and not request.desired_tags and not request.user_id:
+    if not request.level_id and not request.desired_tags and not request.user_beaten_ids:
         raise HTTPException(
             status_code=400,
-            detail="Provide a level ID, desired tags, or user_id.",
+            detail="Provide a level ID, desired tags, or user beaten IDs.",
         )
     results = recommender.recommend(request)
     return RecommendResponse(recommendations=results)
+
 
 
 @app.get("/levels/{level_id}", response_model=Level)

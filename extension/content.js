@@ -108,18 +108,21 @@
 
   /** Request recommendations from the backend (via background.js). */
   async function fetchRecommendations(levelId) {
-    // Try to get the logged-in user's ID; falls back to null if not logged in.
-    let userId = null;
+    // Try to get the logged-in user's beaten levels and skills; falls back to empty if not logged in.
+    let beatenIds = [];
+    let userSkills = {};
     try {
-      const userResp = await chrome.runtime.sendMessage({ type: "GET_USER_ID" });
-      userId = userResp?.data?.ID ?? null;
+      const userResp = await chrome.runtime.sendMessage({ type: "GET_USER_DATA" });
+      beatenIds = userResp?.data?.beatenIds ?? [];
+      userSkills = userResp?.data?.skills ?? {};
     } catch (_) {}
 
     const payload = {
-      user_id: userId,
       level_id: levelId ?? null,
       desired_tags: {},
       limit: 10,
+      user_beaten_ids: beatenIds,
+      user_skills: userSkills,
     };
 
     chrome.runtime.sendMessage({ type: "RECOMMEND", payload }, (response) => {
