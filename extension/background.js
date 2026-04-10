@@ -8,6 +8,8 @@
  *    issues since service workers are not subject to the page's CSP).
  */
 
+// For public deployments, change this to your hosted backend URL (e.g. "http://<oracle-ip>:8000").
+// Users can also override this at any time via the popup settings.
 const DEFAULT_API_URL = "http://localhost:8000";
 const GDDL_API = "https://gdladder.com/api";
 const SUBMISSIONS_PAGE_SIZE = 25;

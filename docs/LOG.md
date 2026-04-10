@@ -15,3 +15,4 @@
 | 4/04/2026 | 1 hours | UI polish: popup styling tuned to gdladder.com theme |
 | 4/06/2026 | 2 hours | Adjust user id influence on RecommendationRequest. UI polish: popup styling further tuned to gdladder.com theme |
 | 4/07/2026 | 2.5 hours | Migrated fetching user information from backend to extension to cache in browser. Run full `sync.py` to fetch updated tags |
+| 4/10/2026 | 2.5 hours | Added icon set to extension. Prepare backend to be deployment to Oracle Cloud |
