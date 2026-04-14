@@ -146,26 +146,47 @@ recommendBtn.addEventListener("click", async () => {
     recommendBtn.textContent = "Get Recommendations";
 
     if (chrome.runtime.lastError || response?.error) {
-      resultsEl.innerHTML = `<p style="color:#f87171">Error: ${response?.error || "Unknown error"}</p>`;
+      const errP = document.createElement("p");
+      errP.style.color = "#f87171";
+      errP.textContent = `Error: ${response?.error || "Unknown error"}`;
+      resultsEl.replaceChildren(errP);
       resultsEl.classList.remove("hidden");
       return;
     }
 
     const recs = response.data?.recommendations ?? [];
     if (recs.length === 0) {
-      resultsEl.innerHTML = `<p style="color:#94a3b8">No results. Try adjusting your filters or run a sync.</p>`;
+      const emptyP = document.createElement("p");
+      emptyP.style.color = "#94a3b8";
+      emptyP.textContent = "No results. Try adjusting your filters or run a sync.";
+      resultsEl.replaceChildren(emptyP);
     } else {
-      resultsEl.innerHTML = recs
-        .map(
-          ({ level, score, reason }) => `
-          <a class="rec-item tier-${Math.round(level.tier)}" href="https://gdladder.com/level/${level.id}">
-            <span class="rec-name">${level.name}</span>
-            <span class="rec-meta">Tier ${level.tier.toFixed(2)} · ${level.difficulty} Demon · ${Object.keys(level.tags).slice(0, 3).join(", ") || "no tags"}</span>
-            <span class="rec-meta">${reason}</span>
-            <span class="rec-score">${(score * 100).toFixed(0)}% Match</span>
-          </a>`
-        )
-        .join("");
+      const items = recs.map(({ level, score, reason }) => {
+        const a = document.createElement("a");
+        a.className = `rec-item tier-${Math.round(level.tier)}`;
+        a.href = `https://gdladder.com/level/${level.id}`;
+
+        const name = document.createElement("span");
+        name.className = "rec-name";
+        name.textContent = level.name;
+
+        const topTags = Object.keys(level.tags).slice(0, 3).join(", ") || "no tags";
+        const meta1 = document.createElement("span");
+        meta1.className = "rec-meta";
+        meta1.textContent = `Tier ${level.tier.toFixed(2)} · ${level.difficulty} Demon · ${topTags}`;
+
+        const meta2 = document.createElement("span");
+        meta2.className = "rec-meta";
+        meta2.textContent = reason;
+
+        const scoreEl = document.createElement("span");
+        scoreEl.className = "rec-score";
+        scoreEl.textContent = `${(score * 100).toFixed(0)}% Match`;
+
+        a.append(name, meta1, meta2, scoreEl);
+        return a;
+      });
+      resultsEl.replaceChildren(...items);
     }
     resultsEl.classList.remove("hidden");
   });
