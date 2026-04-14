@@ -11,7 +11,7 @@
   "permissions": ["storage", "scripting", "webNavigation", "tabs"],
   "host_permissions": [
     "https://gdladder.com/*",
-    "http://localhost:8000/*"
+    "https://gddl.melvinwhitaker.com/*"
   ],
   "background": {
     "service_worker": "background.js"
