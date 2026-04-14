@@ -1,10 +1,10 @@
-Privacy Policy — GDDL Demon Recommender
+# Privacy Policy — GDDL Demon Recommender
 Last updated: April 2026
 
 GDDL Demon Recommender is a Chrome extension that recommends 
 Geometry Dash demons from gdladder.com based on your skill profile.
 
-DATA COLLECTED AND HOW IT IS USED
+## DATA COLLECTED AND HOW IT IS USED
 
 When you are logged in to gdladder.com, the extension reads the 
 following data from the GDDL public API using your existing browser 
@@ -27,18 +27,18 @@ session:
 
 When you are not logged in, only the current level ID is used.
 
-DATA SHARING
+## DATA SHARING
 
 No data is shared with third parties. The only external server this 
 extension communicates with is gddl.melvinwhitaker.com (the 
 recommendation backend operated by the developer) and the public 
 GDDL API at gdladder.com.
 
-CHILDREN'S PRIVACY
+## CHILDREN'S PRIVACY
 
 This extension does not knowingly collect personal information from 
 children under the age of 13.
 
-CONTACT
+## CONTACT
 
 For privacy questions or concerns, contact: awsome7mailman@gmail.com
