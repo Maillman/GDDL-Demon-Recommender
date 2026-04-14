@@ -1,0 +1,58 @@
+GDDL Demon Recommender — Chrome Web Store Description
+======================================================
+
+SHORT DESCRIPTION
+----------------------------------
+Get personalized Geometry Dash demon recommendations on gdladder.com based on your skill profile and beaten levels.
+
+
+DETAILED DESCRIPTION
+---------------------
+Tired of scrolling through hundreds of demons on the GDDL ladder trying to figure out what to play next? GDDL Demon Recommender does the work for you.
+
+The extension connects to gdladder.com's skill tag data — community votes on what each level demands from a player — and uses that to find demons that genuinely fit your playstyle. No guessing. No sifting through tier lists. Just levels that match what you're actually good at.
+
+
+HOW IT WORKS
+
+Every demon on the GDDL ladder is tagged by the community with the skills it requires: Ship, Wave, Timings, Chokepoints, Memory, Nerve Control, and more. The recommender turns those tag profiles into skill vectors and finds the demons closest to your personal skill fingerprint. Each result shows a match percentage and a plain-English reason explaining exactly why that level was suggested.
+
+
+THREE WAYS TO FIND YOUR NEXT DEMON
+
+1. RECOMMENDATIONS ON EVERY LEVEL PAGE
+While browsing any demon on gdladder.com, a "Recommended Demons" panel automatically appears below the level header. If you're logged in, recommendations are personalized to your beaten-level history and skill distribution — so the suggestions adapt to what you've actually cleared. Not logged in? The panel still shows levels similar to the one you're viewing.
+
+2. SKILL-BASED SEARCH FROM THE POPUP
+Open the extension popup from the toolbar, dial up the skills you want to practice using the sliders — say, heavy Ship with some Chokepoints — and hit "Get Recommendations." The extension weights levels by how closely their community tag profile matches your desired skill mix. Great for targeting a specific weakness or planning a practice session around a particular gamemode.
+
+3. PROFILE-BASED RECOMMENDATIONS
+Open the popup while on your GDDL profile page (or any page on gdladder.com). If no skill sliders are set and no reference level is entered, the recommender builds your query entirely from your beaten-level history. It reads what you've cleared, identifies patterns in your skill profile, and surfaces demons that are a natural next step — similar in style to what you already play but not already on your completed list.
+
+
+FEATURES
+
+• Injected panel on level pages — recommendations appear automatically, no clicks needed
+• Popup with 20 skill sliders (Cube, Ship, Ball, UFO, Wave, Robot, Spider, Swing, Timings, High CPS, Flow, Memory, Nerve Control, Duals, Chokepoints, Learny, Gimmicky, Overall, Fast-Paced, Slow-Paced)
+• Tier range filter — narrow results to a specific tier window (1–35)
+• "Show already-beaten levels" toggle — include or hide demons you've cleared
+• Match percentage and reason shown for every result
+• Auto-reads your GDDL profile when you're logged in — no manual input required
+• Cached profile data — your beaten level list is only re-fetched when your submission count changes, so the popup loads instantly on repeat use
+• Works on SPA navigation — gdladder.com uses client-side routing and the extension keeps up without requiring a page reload
+• Results link directly to the level page — click any recommendation to navigate there immediately
+
+
+PRIVACY
+
+The extension only runs on gdladder.com. It reads your public GDDL profile and beaten-level list when you are logged in to gdladder.com — the same information visible to anyone on your public profile page. No data is collected, stored, or transmitted to any third party. Level IDs and skill queries are sent to the recommendation backend solely to compute results and are not retained.
+
+A full privacy policy is available at: [YOUR PRIVACY POLICY URL]
+
+
+NOTES
+
+• Recommendations are powered by a backend that indexes the full GDDL demon catalog. The extension status badge in the popup shows how many levels are currently indexed.
+• The extension requires an active internet connection to fetch recommendations.
+• If the status badge shows "API offline," the backend may be temporarily unavailable.
+
