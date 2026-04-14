@@ -19,3 +19,4 @@
 | 4/11/2026 | 3 hours | Creating and running script to acquire Oracle Cloud VM.Standard.A1.Flex instance |
 | 4/13/2026 | 2.5 hours | Eliminate XSS risk and bump version for Chrome Web Store |
 | 4/13/2026 | 2 hours | Updated chrome extension URLs to Oracle Cloud backend deployment. Added screenshots for Chrome Web Store |
+| 4/14/2026 | 2 hours | Added Chrome Web Store description and privacy policy. Chrome extension sent for review |
