@@ -31,6 +31,15 @@ chrome.runtime.onInstalled.addListener(() => {
   });
 });
 
+// Warm the user-data cache when the service worker starts so the popup can
+// read it without waiting on a fresh fetch.
+chrome.runtime.onStartup.addListener(() => { prefetchUserData(); });
+
+/** Fire-and-forget cache warm — errors are intentionally swallowed. */
+function prefetchUserData() {
+  getUserData().catch(() => {});
+}
+
 /**
  * Message handler — content scripts and popup send messages here to make
  * API calls without dealing with CORS directly.
@@ -183,6 +192,13 @@ async function fetchUserSkills(userId) {
   return Object.fromEntries(Object.entries(named).map(([k, v]) => [k, v / sum]));
 }
 
+// Prefetch user data as soon as the user begins navigating to any gdladder.com
+// page, so the cache is warm by the time content.js or the popup asks for it.
+chrome.webNavigation.onCommitted.addListener(
+  () => { prefetchUserData(); },
+  { url: [{ hostEquals: "gdladder.com" }] }
+);
+
 /**
  * SPA navigation handler — gdladder.com uses pushState routing, so the
  * content script only runs once on initial page load.  Re-inject it
@@ -190,6 +206,7 @@ async function fetchUserSkills(userId) {
  */
 chrome.webNavigation.onHistoryStateUpdated.addListener(
   (details) => {
+    prefetchUserData();
     chrome.scripting.executeScript({
       target: { tabId: details.tabId },
       files: ["content.js"],
