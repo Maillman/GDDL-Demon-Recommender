@@ -94,9 +94,14 @@ def recommend(request: RecommendRequest) -> list[RecommendedLevel]:
     query_vec = _build_query_vector(request)
     where = _tier_filter(request)
 
+    ignore_set = set(request.user_beaten_ids) if not request.show_beaten else set()
+    if request.level_id:
+        ignore_set.add(request.level_id)
+
+    n_results = min(request.limit + len(ignore_set), db.count())
     results = db.query(
         query_embedding=query_vec,
-        n_results=request.limit,
+        n_results=n_results,
         where=where,
     )
 
@@ -105,12 +110,11 @@ def recommend(request: RecommendRequest) -> list[RecommendedLevel]:
     metadatas = results.get("metadatas", [[]])[0]
     distances = results.get("distances", [[]])[0]
 
-    ignore_set = set(request.user_beaten_ids) if not request.show_beaten else set()
-    ignore_set.add(request.level_id)
-
     for level_id, meta, dist in zip(ids, metadatas, distances):
         if level_id in ignore_set:
             continue
+        if len(recommendations) >= request.limit:
+            break
         level = _metadata_to_level(level_id, meta)
         # Cosine distance → similarity score (0–1, higher is better)
         score = round(1.0 - dist, 4)
