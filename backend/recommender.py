@@ -105,10 +105,11 @@ def recommend(request: RecommendRequest) -> list[RecommendedLevel]:
     metadatas = results.get("metadatas", [[]])[0]
     distances = results.get("distances", [[]])[0]
 
-    beaten_set = set(request.user_beaten_ids) if not request.show_beaten else set()
+    ignore_set = set(request.user_beaten_ids) if not request.show_beaten else set()
+    ignore_set.add(request.level_id)
 
     for level_id, meta, dist in zip(ids, metadatas, distances):
-        if level_id in beaten_set:
+        if level_id in ignore_set:
             continue
         level = _metadata_to_level(level_id, meta)
         # Cosine distance → similarity score (0–1, higher is better)
