@@ -10,8 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 import db
 import recommender
-from models import RecommendRequest, RecommendResponse, Level
-import gddl_client
+from models import RecommendRequest, RecommendResponse
 
 
 @asynccontextmanager
@@ -23,7 +22,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="GDDL Demon Recommender API",
-    version="1.0.2",
+    version="1.0.3",
     lifespan=lifespan,
 )
 
@@ -50,13 +49,3 @@ async def recommend(request: RecommendRequest) -> RecommendResponse:
         )
     results = recommender.recommend(request)
     return RecommendResponse(recommendations=results)
-
-
-
-@app.get("/levels/{level_id}", response_model=Level)
-async def get_level(level_id: str) -> Level:
-    """Proxy a single level lookup to the GDDL API."""
-    try:
-        return await gddl_client.fetch_level(level_id)
-    except Exception as exc:
-        raise HTTPException(status_code=502, detail=str(exc))

@@ -96,13 +96,6 @@ async def fetch_all_levels() -> list[Level]:
     return levels
 
 
-async def fetch_level(level_id: str) -> Level:
-    """Fetch a single level by its Level ID."""
-    async with httpx.AsyncClient(headers=_get_headers(), timeout=10.0) as client:
-        response = await _get_with_retry(client, f"{BASE_URL}/level/{level_id}")
-        return _parse_level(response.json())
-
-
 async def fetch_level_tags(level_id: str) -> dict[str, float]:
     """Fetch tags for a level and return each tag's share of total ReactCount.
 
