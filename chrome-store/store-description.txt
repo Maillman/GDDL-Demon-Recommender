@@ -34,7 +34,7 @@ FEATURES
 
 • Injected panel on level pages — recommendations appear automatically, no clicks needed
 • Popup with 20 skill sliders (Cube, Ship, Ball, UFO, Wave, Robot, Spider, Swing, Timings, High CPS, Flow, Memory, Nerve Control, Duals, Chokepoints, Learny, Gimmicky, Overall, Fast-Paced, Slow-Paced)
-• Tier range filter — narrow results to a specific tier window (1–35)
+• Tier range filter — narrow results to a specific tier window (1–39)
 • "Show already-beaten levels" toggle — include or hide demons you've cleared
 • Match percentage and reason shown for every result
 • Auto-reads your GDDL profile when you're logged in — no manual input required

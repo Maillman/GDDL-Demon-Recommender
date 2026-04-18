@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class Level(BaseModel):
@@ -17,7 +17,7 @@ class RecommendRequest(BaseModel):
     desired_tags: dict[str, float] = {}  # tag name -> fraction (0.0–1.0)
     tier_min: float | None = None
     tier_max: float | None = None
-    limit: int = 10
+    limit: int = Field(default=10, le=25)
     show_beaten: bool = False  # If True, include already-beaten levels in results (never affects similarity search)
     user_beaten_ids: list[str] = []  # User's beaten levels; used for filtering and profile-mode similarity
     user_skills: dict[str, float] = {}  # User's skill distribution; used for profile-mode similarity

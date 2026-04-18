@@ -6,7 +6,7 @@ A skill-aware demon recommender for Geometry Dash, built on top of the [Geometry
 
 ## What It Does
 
-The GDDL assigns every Demon-difficulty level a tier from 1–35, giving players a much finer difficulty scale than the game's five built-in labels. But tier alone doesn't capture *what skills* a level demands — two tier-15 levels can require completely different techniques (e.g. precision wave vs. memory cube). Picking your next level by tier alone often means jumping into something that punishes skills you've never trained.
+The GDDL assigns every Demon-difficulty level a tier from 1–39, giving players a much finer difficulty scale than the game's five built-in labels. But tier alone doesn't capture *what skills* a level demands — two tier-15 levels can require completely different techniques (e.g. precision wave vs. memory cube). Picking your next level by tier alone often means jumping into something that punishes skills you've never trained.
 
 The GDDL Demon Recommender builds a semantic skill profile for every demon from its community-assigned tags, then matches a player's existing skill set to the most appropriate next level. The result surfaces as a Chrome extension panel directly on gdladder.com, with no separate app required.
 

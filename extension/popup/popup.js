@@ -170,7 +170,7 @@ recommendBtn.addEventListener("click", async () => {
     show_beaten: showBeatenInput.checked,
     tier_min: tierMinInput.value ? parseFloat(tierMinInput.value) : null,
     tier_max: tierMaxInput.value ? parseFloat(tierMaxInput.value) : null,
-    limit: parseInt(limitInput.value) || 10,
+    limit: Math.min(parseInt(limitInput.value) || 10, 25),
     user_beaten_ids: beatenIds,
     user_skills: userSkills,
   };
