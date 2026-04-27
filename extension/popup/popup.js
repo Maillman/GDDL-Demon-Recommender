@@ -10,8 +10,6 @@ const KNOWN_TAGS = [
   "Fast-Paced", "Slow-Paced",
 ];
 
-const DEFAULT_API_URL = "https://gddl.melvinwhitaker.com";
-
 // tag name -> raw slider value (0–100)
 const tagWeights = {};
 
@@ -25,43 +23,6 @@ const tierMaxInput     = document.getElementById("tier-max");
 const limitInput       = document.getElementById("limit");
 const recommendBtn     = document.getElementById("recommend-btn");
 const resultsEl        = document.getElementById("results");
-const settingsLink     = document.getElementById("settings-link");
-const settingsPanel    = document.getElementById("settings-panel");
-const apiUrlInput      = document.getElementById("api-url-input");
-const saveUrlBtn       = document.getElementById("save-url-btn");
-const resetUrlBtn      = document.getElementById("reset-url-btn");
-const settingsStatus   = document.getElementById("settings-status");
-
-// --- Settings panel ---
-settingsLink.addEventListener("click", (e) => {
-  e.preventDefault();
-  const isHidden = settingsPanel.classList.toggle("hidden");
-  settingsLink.textContent = isHidden ? "Settings" : "Hide Settings";
-  if (!isHidden) {
-    chrome.storage.local.get("apiUrl", ({ apiUrl }) => {
-      apiUrlInput.value = apiUrl || DEFAULT_API_URL;
-    });
-  }
-});
-
-saveUrlBtn.addEventListener("click", () => {
-  const url = apiUrlInput.value.trim();
-  if (!url) return;
-  chrome.storage.local.set({ apiUrl: url }, () => {
-    settingsStatus.textContent = "Saved.";
-    setTimeout(() => { settingsStatus.textContent = ""; }, 2000);
-    checkHealth();
-  });
-});
-
-resetUrlBtn.addEventListener("click", () => {
-  chrome.storage.local.set({ apiUrl: DEFAULT_API_URL }, () => {
-    apiUrlInput.value = DEFAULT_API_URL;
-    settingsStatus.textContent = "Reset to default.";
-    setTimeout(() => { settingsStatus.textContent = ""; }, 2000);
-    checkHealth();
-  });
-});
 
 // Open recommendation links in the currently active tab instead of creating a new one.
 resultsEl.addEventListener("click", async (event) => {
