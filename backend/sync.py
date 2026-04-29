@@ -22,6 +22,8 @@ import asyncio
 import argparse
 import json
 import os
+import time
+from datetime import datetime, timezone
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -35,6 +37,15 @@ from models import Level
 TAGS_CONCURRENCY = 1       # Max simultaneous tag-fetch requests
 CHECKPOINT_SAVE_INTERVAL = 50  # Save checkpoint after every N tag fetches
 CHECKPOINT_FILE = os.getenv("SYNC_CHECKPOINT_FILE", "sync_checkpoint.json")
+LOG_FILE = os.getenv("SYNC_LOG_FILE", "sync.log")
+
+
+def _log(message: str) -> None:
+    """Print to stdout and append a timestamped line to the log file."""
+    print(message)
+    ts = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    with open(LOG_FILE, "a") as f:
+        f.write(f"[{ts}] {message}\n")
 
 
 # ---------------------------------------------------------------------------
@@ -126,20 +137,26 @@ async def _fetch_tags_with_progress(
 # ---------------------------------------------------------------------------
 
 async def run(dry_run: bool = False) -> None:
+    sync_start = time.monotonic()
+    _log(f"Sync started.")
+
     # --- Step 1: get levels (from checkpoint or API) -----------------------
     checkpoint = _load_checkpoint()
     if checkpoint:
-        print(f"Resuming from checkpoint: {CHECKPOINT_FILE}")
+        _log(f"Resuming from checkpoint: {CHECKPOINT_FILE}")
         levels = [Level(**lvl) for lvl in checkpoint["levels"]]
         tags_fetched: dict[str, dict[str, float]] = checkpoint.get("tags_fetched", {})
-        print(f"  Loaded {len(levels)} levels, {len(tags_fetched)} already have tags.")
+        _log(f"  Loaded {len(levels)} levels, {len(tags_fetched)} already have tags.")
+        level_fetch_duration = None
     else:
-        print("Fetching levels from GDDL API...")
+        _log("Fetching levels from GDDL API...")
+        t0 = time.monotonic()
         levels = await gddl_client.fetch_all_levels()
-        print(f"  Fetched {len(levels)} levels.")
+        level_fetch_duration = time.monotonic() - t0
+        _log(f"  Fetched {len(levels)} levels in {level_fetch_duration:.1f}s.")
         tags_fetched = {}
         _save_checkpoint(levels, tags_fetched)
-        print(f"  Level list saved to checkpoint: {CHECKPOINT_FILE}")
+        _log(f"  Level list saved to checkpoint: {CHECKPOINT_FILE}")
 
     if dry_run:
         for lvl in levels[:5]:
@@ -148,13 +165,12 @@ async def run(dry_run: bool = False) -> None:
         return
 
     # --- Step 2: decide which levels need a tag refresh --------------------
-    print("Loading cached rating counts from DB...")
+    _log("Loading cached rating counts from DB...")
     stored = db.get_stored_level_cache()
 
     needs_tags: list[Level] = []
     for lvl in levels:
         if lvl.id in tags_fetched:
-            # Already fetched in this run (from checkpoint)
             lvl.tags = tags_fetched[lvl.id]
         else:
             cached = stored.get(lvl.id)
@@ -164,17 +180,20 @@ async def run(dry_run: bool = False) -> None:
                 lvl.tags = json.loads(cached["tags"]) if cached.get("tags") else {}
 
     already_done = len(levels) - len(needs_tags)
-    print(f"  {len(needs_tags)} levels need tag fetch, {already_done} use cached/checkpoint tags.")
+    _log(f"  {len(needs_tags)} levels need tag fetch, {already_done} use cached/checkpoint tags.")
 
     # --- Step 3: fetch tags for changed/new levels -------------------------
+    tag_fetch_duration = 0.0
     if needs_tags:
-        print("Fetching tags for changed/new levels...")
+        _log("Fetching tags for changed/new levels...")
         semaphore = asyncio.Semaphore(TAGS_CONCURRENCY)
+        t0 = time.monotonic()
         await _fetch_tags_with_progress(needs_tags, tags_fetched, levels, semaphore)
-        print("  Done fetching tags.")
+        tag_fetch_duration = time.monotonic() - t0
+        _log(f"  Done fetching tags in {tag_fetch_duration:.1f}s.")
 
     # --- Step 4: embed and upsert ------------------------------------------
-    print("Generating embeddings and upserting to DB...")
+    _log("Generating embeddings and upserting to DB...")
     batch_size = 128
     for i in range(0, len(levels), batch_size):
         batch = levels[i : i + batch_size]
@@ -183,7 +202,14 @@ async def run(dry_run: bool = False) -> None:
         print(f"  Upserted levels {i + 1}–{min(i + batch_size, len(levels))}")
 
     _clear_checkpoint()
-    print(f"Sync complete. DB now contains {db.count()} levels.")
+    total_duration = time.monotonic() - sync_start
+    _log(f"Sync complete. DB now contains {db.count()} levels.")
+    _log(
+        f"Timing summary — "
+        + (f"level fetch: {level_fetch_duration:.1f}s, " if level_fetch_duration is not None else "level fetch: resumed from checkpoint, ")
+        + f"tag fetch: {tag_fetch_duration:.1f}s, "
+        + f"total: {total_duration:.1f}s."
+    )
 
 
 if __name__ == "__main__":

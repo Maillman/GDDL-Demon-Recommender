@@ -93,10 +93,20 @@ uvicorn main:app --reload    # start the API at http://localhost:8000
 3. Click **Load unpacked** and select the `extension/` folder
 4. Navigate to any level page on [gdladder.com](https://gdladder.com/) — the recommendation panel will appear automatically
 
-#### Packaging the Extension
+## Updating Production Code
+
+### Updating the Backend
+SSH'd in the backend, pull the updated backend files from GitHub and restart the service:
+```bash
+git pull
+sudo systemctl restart gddl-recommender
+```
+
+### Packaging the Extension
 Zip only the `extension/` folder contents (not the folder itself):
 ```bash
-cd extension && zip -r ../gddl-demon-recommender.zip .
+cd extension
+zip -r ../gddl-demon-recommender.zip .
 ```
 
 ---
