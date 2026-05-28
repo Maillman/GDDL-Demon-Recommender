@@ -84,3 +84,12 @@ def get_stored_level_cache() -> dict[str, dict]:
 
 def count() -> int:
     return get_collection().count()
+
+
+def get_all(where: dict | None = None) -> chromadb.GetResult:
+    """Fetch all documents (with embeddings + metadata), optionally filtered."""
+    collection = get_collection()
+    kwargs: dict = {"include": ["embeddings", "metadatas"]}
+    if where:
+        kwargs["where"] = where
+    return collection.get(**kwargs)

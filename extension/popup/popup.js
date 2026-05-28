@@ -20,9 +20,14 @@ const statusBadge      = document.getElementById("status-badge");
 const levelIdInput     = document.getElementById("level-id-input");
 const showBeatenInput  = document.getElementById("show-beaten-input");
 const tagListEl        = document.getElementById("tag-list");
-const tierMinInput     = document.getElementById("tier-min");
-const tierMaxInput     = document.getElementById("tier-max");
-const limitInput       = document.getElementById("limit");
+const tierMinInput        = document.getElementById("tier-min");
+const tierMaxInput        = document.getElementById("tier-max");
+const enjoymentMinInput   = document.getElementById("enjoyment-min");
+const enjoymentMaxInput   = document.getElementById("enjoyment-max");
+const ratingCountMinInput = document.getElementById("rating-count-min");
+const ratingCountMaxInput = document.getElementById("rating-count-max");
+const creatorInput        = document.getElementById("creator-input");
+const limitInput          = document.getElementById("limit");
 const recommendBtn     = document.getElementById("recommend-btn");
 const resultsEl        = document.getElementById("results");
 const settingsLink     = document.getElementById("settings-link");
@@ -170,6 +175,11 @@ recommendBtn.addEventListener("click", async () => {
     show_beaten: showBeatenInput.checked,
     tier_min: tierMinInput.value ? parseFloat(tierMinInput.value) : null,
     tier_max: tierMaxInput.value ? parseFloat(tierMaxInput.value) : null,
+    enjoyment_min: enjoymentMinInput.value ? parseFloat(enjoymentMinInput.value) : null,
+    enjoyment_max: enjoymentMaxInput.value ? parseFloat(enjoymentMaxInput.value) : null,
+    rating_count_min: ratingCountMinInput.value ? parseInt(ratingCountMinInput.value) : null,
+    rating_count_max: ratingCountMaxInput.value ? parseInt(ratingCountMaxInput.value) : null,
+    creator: creatorInput.value.trim() || null,
     limit: Math.min(parseInt(limitInput.value) || 10, 25),
     user_beaten_ids: beatenIds,
     user_skills: userSkills,

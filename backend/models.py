@@ -17,6 +17,11 @@ class RecommendRequest(BaseModel):
     desired_tags: dict[str, float] = {}  # tag name -> fraction (0.0–1.0)
     tier_min: float | None = None
     tier_max: float | None = None
+    enjoyment_min: float | None = None
+    enjoyment_max: float | None = None
+    rating_count_min: int | None = None
+    rating_count_max: int | None = None
+    creator: str | None = None
     limit: int = Field(default=10, le=25)
     show_beaten: bool = False  # If True, include already-beaten levels in results (never affects similarity search)
     user_beaten_ids: list[str] = []  # User's beaten levels; used for filtering and profile-mode similarity
