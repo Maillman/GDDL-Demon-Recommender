@@ -156,7 +156,7 @@ h1 { font-size: 1rem; font-weight: 700; color: #a78bfa; }
 .section { display: flex; flex-direction: column; gap: 4px; }
 .section label { font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; letter-spacing: .05em; }
 
-textarea, input[type="number"] {
+textarea, input[type="number"], input[type="text"] {
   background: #1e293b;
   border: 1px solid #334155;
   border-radius: 4px;
@@ -239,6 +239,7 @@ input[type="range"]::-moz-range-thumb {
 .btn-primary:disabled { background: #334155; color: #64748b; cursor: not-allowed; }
 
 .results { display: flex; flex-direction: column; gap: 6px; }
+.hidden { display: none; }
 .results.hidden { display: none; }
 
 .rec-item {
@@ -274,6 +275,36 @@ input[type="range"]::-moz-range-thumb {
 .rec-name  { font-weight: 600; font-size: 0.85rem; }
 .rec-meta  { color: #4a5565; font-size: 0.75rem; }
 .rec-score { color: #05df72; font-size: 0.75rem; font-weight: 600; }
+
+.settings-actions { display: flex; gap: 8px; align-items: center; margin-top: 4px; }
+
+.btn-secondary {
+  background: #1e293b;
+  color: #a78bfa;
+  border: 1px solid #a78bfa;
+  border-radius: 6px;
+  padding: 5px 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn-secondary:hover { background: #2d1f5e; }
+
+.btn-ghost {
+  background: none;
+  border: none;
+  color: #475569;
+  font-size: 0.75rem;
+  cursor: pointer;
+  padding: 0;
+}
+.btn-ghost:hover { color: #94a3b8; }
+
+.settings-status {
+  font-size: 0.75rem;
+  color: #34d399;
+  min-height: 1em;
+}
 
 footer { text-align: right; }
 footer a { color: #475569; font-size: 0.75rem; text-decoration: none; }
