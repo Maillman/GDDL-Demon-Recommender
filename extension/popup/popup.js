@@ -30,12 +30,21 @@ const creatorInput        = document.getElementById("creator-input");
 const limitInput          = document.getElementById("limit");
 const recommendBtn     = document.getElementById("recommend-btn");
 const resultsEl        = document.getElementById("results");
+const filtersLink      = document.getElementById("filters-link");
+const filtersPanel     = document.getElementById("filters-panel");
 const settingsLink     = document.getElementById("settings-link");
 const settingsPanel    = document.getElementById("settings-panel");
 const apiUrlInput      = document.getElementById("api-url-input");
 const saveUrlBtn       = document.getElementById("save-url-btn");
 const resetUrlBtn      = document.getElementById("reset-url-btn");
 const settingsStatus   = document.getElementById("settings-status");
+
+// --- Filters panel ---
+filtersLink.addEventListener("click", (e) => {
+  e.preventDefault();
+  const isHidden = filtersPanel.classList.toggle("hidden");
+  filtersLink.textContent = isHidden ? "Filters" : "Hide Filters";
+});
 
 // --- Settings panel ---
 settingsLink.addEventListener("click", (e) => {

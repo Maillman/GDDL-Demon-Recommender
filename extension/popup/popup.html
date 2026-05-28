@@ -17,23 +17,12 @@
     <input id="level-id-input" type="text" placeholder="e.g. 12345" />
   </section>
 
-  <section class="section row">
-    <label class="checkbox-label">
-      <input id="show-beaten-input" type="checkbox" />
-      Show already-beaten levels in results
-    </label>
-  </section>
-
   <section class="section">
     <label>Desired Skills</label>
     <div id="tag-list" class="slider-list"></div>
   </section>
 
-  <button id="recommend-btn" class="btn-primary">Get Recommendations</button>
-
-  <section id="results" class="results hidden"></section>
-
-  <section id="settings-panel" class="section hidden">
+  <section id="filters-panel" class="section hidden">
     <section class="section row">
       <div class="field">
         <label for="tier-min">Tier Min</label>
@@ -42,10 +31,6 @@
       <div class="field">
         <label for="tier-max">Tier Max</label>
         <input id="tier-max" type="number" min="1" max="39" placeholder="39" />
-      </div>
-      <div class="field">
-        <label for="limit">Results</label>
-        <input id="limit" type="number" min="1" max="25" value="10" />
       </div>
     </section>
     <section class="section row">
@@ -70,6 +55,25 @@
     </section>
     <label for="creator-input">Creator (partial match)</label>
     <input id="creator-input" type="text" placeholder="e.g. Dorami" />
+    <section class="section row">
+      <label class="checkbox-label">
+        <input id="show-beaten-input" type="checkbox" />
+        Show already-beaten levels in results
+      </label>
+    </section>
+  </section>
+
+  <button id="recommend-btn" class="btn-primary">Get Recommendations</button>
+
+  <section id="results" class="results hidden"></section>
+
+  <section id="settings-panel" class="section hidden">
+    <section class="section row">
+      <div class="field">
+        <label for="limit">Results</label>
+        <input id="limit" type="number" min="1" max="25" value="10" />
+      </div>
+    </section>
     <label for="api-url-input">Backend API URL</label>
     <input id="api-url-input" type="text" placeholder="http://localhost:8000" />
     <div class="settings-actions">
@@ -80,6 +84,7 @@
   </section>
 
   <footer>
+    <a id="filters-link" href="#">Filters</a>
     <a id="settings-link" href="#">Settings</a>
   </footer>
 
