@@ -1,10 +1,13 @@
 """Core recommendation logic."""
 
 import json
+import logging
 import numpy as np
 from embedder import embed_text
 from models import Level, RecommendedLevel, RecommendRequest
 import db
+
+logger = logging.getLogger(__name__)
 
 
 def _metadata_to_level(level_id: str, meta: dict) -> Level:
@@ -35,7 +38,11 @@ def _build_query_vector(
         # Explicit mode: embed the single reference level
         if request.level_id:
             result = db.get_by_ids([request.level_id])
-            vecs.extend(result.get("embeddings", []))
+            embeddings = result.get("embeddings")
+            if not embeddings.any() or embeddings is None:
+                logger.warning("Level %s not found in ChromaDB; falling back to generic query", request.level_id)
+                embeddings = []
+            vecs.extend(embeddings)
 
         # Embed desired-tag text, repeating tags proportionally to weight
         if request.desired_tags:
@@ -111,40 +118,21 @@ def recommend(request: RecommendRequest) -> list[RecommendedLevel]:
 
     creator_filter = request.creator.strip() if request.creator else None
 
-    if creator_filter:
-        return _recommend_with_creator_filter(request, query_vec, where, ignore_set, creator_filter)
-
-    n_results = min(request.limit + len(ignore_set), db.count())
-    results = db.query(query_embedding=query_vec, n_results=n_results, where=where)
-
-    recommendations: list[RecommendedLevel] = []
-    ids = results.get("ids", [[]])[0]
-    metadatas = results.get("metadatas", [[]])[0]
-    distances = results.get("distances", [[]])[0]
-
-    for level_id, meta, dist in zip(ids, metadatas, distances):
-        if level_id in ignore_set:
-            continue
-        if len(recommendations) >= request.limit:
-            break
-        level = _metadata_to_level(level_id, meta)
-        score = round(1.0 - dist, 4)
-        recommendations.append(
-            RecommendedLevel(level=level, score=score, reason=_make_reason(level, request))
-        )
-
-    return recommendations
+    return _recommend_with_numpy(request, query_vec, where, ignore_set, creator_filter)
 
 
-def _recommend_with_creator_filter(
+def _recommend_with_numpy(
     request: RecommendRequest,
     query_vec: list[float],
     where: dict | None,
     ignore_set: set[str],
-    creator_filter: str,
+    creator_filter: str | None,
 ) -> list[RecommendedLevel]:
-    """Creator filtering requires substring matching, which ChromaDB's HNSW can't do.
-    Fetch all matching docs and rank with numpy cosine similarity instead."""
+    """Rank candidates with numpy cosine similarity instead of ChromaDB's HNSW index.
+
+    Used for all queries because the local HNSW index is unreliable on this installation.
+    Creator filter is applied as a substring match when provided.
+    """
     all_docs = db.get_all(where=where)
     ids = all_docs.get("ids", [])
     metadatas = all_docs.get("metadatas", [])
@@ -160,7 +148,7 @@ def _recommend_with_creator_filter(
     for level_id, meta, emb in zip(ids, metadatas, embeddings):
         if level_id in ignore_set:
             continue
-        if creator_filter not in (meta.get("creator") or ""):
+        if creator_filter is not None and creator_filter not in (meta.get("creator") or ""):
             continue
         e = np.array(emb)
         denom = q_norm * np.linalg.norm(e)

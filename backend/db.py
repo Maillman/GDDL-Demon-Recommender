@@ -1,11 +1,14 @@
 """ChromaDB setup and helpers."""
 
 import json
+import logging
 import os
 from functools import lru_cache
 import chromadb
 from chromadb.config import Settings
 from models import Level
+
+logger = logging.getLogger(__name__)
 
 COLLECTION_NAME = "gddl_levels"
 DB_PATH = os.getenv("CHROMA_DB_PATH", "./chroma_db")
@@ -58,7 +61,21 @@ def query(
     kwargs: dict = {"query_embeddings": [query_embedding], "n_results": n_results}
     if where:
         kwargs["where"] = where
-    return collection.query(**kwargs)
+    # HNSW raises RuntimeError when n_results exceeds the number of indexed items
+    # (e.g. a tight where filter or a very small collection). Halve until it fits.
+    while kwargs["n_results"] >= 1:
+        try:
+            return collection.query(**kwargs)
+        except RuntimeError:
+            kwargs["n_results"] //= 2
+    # Even n_results=1 failed — index is empty or corrupt; return empty result set.
+    logger.warning(
+        "ChromaDB HNSW query failed at n_results=1 (collection count=%d, where=%s). "
+        "Returning empty results.",
+        count(),
+        kwargs.get("where"),
+    )
+    return {"ids": [[]], "metadatas": [[]], "distances": [[]], "embeddings": None, "documents": [[]]}
 
 
 def get_by_ids(level_ids: list[str]) -> chromadb.GetResult:
