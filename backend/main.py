@@ -22,7 +22,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="GDDL Demon Recommender API",
-    version="1.0.3",
+    version="1.0.4",
     lifespan=lifespan,
 )
 
