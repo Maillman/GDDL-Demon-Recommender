@@ -96,10 +96,10 @@ def _metadata_filter(request: RecommendRequest) -> dict | None:
 
 def _make_reason(level: Level, request: RecommendRequest, max_tags: int = 3) -> str:
     top_tags = list(level.tags)[:max_tags]
-    query_tags = request.desired_tags or request.user_skills
+    query_tags = request.desired_tags
     matching_tags = [t for t in top_tags if t in query_tags]
     if matching_tags:
-        return f"Matches desired skills: {', '.join(matching_tags)}."
+        return f"Matches skills: {', '.join(matching_tags)}."
     if request.level_id:
         return f"Similar to this level."
     return f"Similar skillset to your profile."
