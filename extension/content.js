@@ -62,12 +62,23 @@
   }
 
   /** Build the recommendation panel markup. */
-  function createPanel(recommendations) {
+  function createPanel(recommendations, matchResult) {
     const panel = document.createElement("div");
     panel.id = PANEL_ID;
 
+    let matchBadge = "";
+    if (matchResult) {
+      const pct = (matchResult.score * 100).toFixed(0);
+      matchBadge = `
+        <div class="gddl-match-badge">
+          <span class="gddl-match-label">Skill Match</span>
+          <span class="gddl-match-score">${pct}%</span>
+          <span class="gddl-match-reason">${matchResult.reason}</span>
+        </div>`;
+    }
+
     if (!recommendations || recommendations.length === 0) {
-      panel.innerHTML = `<p class="gddl-empty">No recommendations found. Run a sync or adjust your filters.</p>`;
+      panel.innerHTML = `${matchBadge}<p class="gddl-empty">No recommendations found. Run a sync or adjust your filters.</p>`;
       return panel;
     }
 
@@ -84,19 +95,20 @@
       .join("");
 
     panel.innerHTML = `
+      ${matchBadge}
       <h3 class="gddl-panel-title">Recommended Demons</h3>
       <div class="gddl-rec-list">${items}</div>`;
     return panel;
   }
 
   /** Inject the recommendation panel into the page. */
-  function injectPanel(recommendations) {
-    const panel = createPanel(recommendations);
+  function injectPanel(recommendations, matchResult) {
+    const panel = createPanel(recommendations, matchResult);
 
     waitForInjectionTarget((target) => {
       const existing = document.getElementById(PANEL_ID);
       if (existing) existing.remove();
-      
+
       if (!target.isConnected) {
         document.body.appendChild(panel);
         return;
@@ -106,7 +118,7 @@
     });
   }
 
-  /** Request recommendations from the backend (via background.js). */
+  /** Request recommendations and a skill-match score from the backend (via background.js). */
   async function fetchRecommendations(levelId) {
     // Try to get the logged-in user's beaten levels and skills; falls back to empty if not logged in.
     let beatenIds = [];
@@ -117,7 +129,7 @@
       userSkills = userResp?.data?.skills ?? {};
     } catch (_) {}
 
-    const payload = {
+    const recommendPayload = {
       level_id: levelId ?? null,
       desired_tags: {},
       limit: 10,
@@ -125,13 +137,28 @@
       user_skills: userSkills,
     };
 
-    chrome.runtime.sendMessage({ type: "RECOMMEND", payload }, (response) => {
-      if (chrome.runtime.lastError || response?.error) {
-        console.warn("[GDDL Recommender] API error:", response?.error || chrome.runtime.lastError);
-        return;
-      }
-      injectPanel(response.data?.recommendations ?? []);
-    });
+    const matchPayload = {
+      levelId,
+      body: { user_beaten_ids: beatenIds, user_skills: userSkills },
+    };
+
+    const [recommendResp, matchResp] = await Promise.all([
+      new Promise((resolve) =>
+        chrome.runtime.sendMessage({ type: "RECOMMEND", payload: recommendPayload }, resolve)
+      ),
+      new Promise((resolve) =>
+        chrome.runtime.sendMessage({ type: "MATCH_LEVEL", payload: matchPayload }, resolve)
+      ),
+    ]);
+
+    if (chrome.runtime.lastError) {
+      console.warn("[GDDL Recommender] API error:", chrome.runtime.lastError);
+      return;
+    }
+
+    const recommendations = recommendResp?.data?.recommendations ?? [];
+    const matchResult = matchResp?.data ?? null;
+    injectPanel(recommendations, matchResult);
   }
 
   // --- Entry point ---

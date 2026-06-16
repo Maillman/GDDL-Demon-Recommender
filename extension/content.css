@@ -58,6 +58,36 @@
 .gddl-rec-reason { color: #4a5565; font-size: 0.8rem; grid-column: 1 / -1; }
 .gddl-rec-score { color: #05df72; font-size: 0.85rem; font-weight: 600; }
 
+.gddl-match-badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  margin-bottom: 14px;
+  background: #16213e;
+  border-left: 3px solid #a78bfa;
+  border-radius: 4px;
+}
+
+.gddl-match-label {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.gddl-match-score {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #05df72;
+}
+
+.gddl-match-reason {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  margin-left: auto;
+}
+
 .gddl-empty {
   color: #94a3b8;
   font-size: 0.9rem;

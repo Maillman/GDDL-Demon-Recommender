@@ -64,6 +64,14 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
         });
         if (!response.ok) { sendResponse({ error: `API error ${response.status}` }); return; }
         sendResponse({ data: await response.json() });
+      } else if (message.type === "MATCH_LEVEL") {
+        response = await fetch(`${base}/levels/${message.payload.levelId}/match`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(message.payload.body),
+        });
+        if (!response.ok) { sendResponse({ error: `API error ${response.status}` }); return; }
+        sendResponse({ data: await response.json() });
       } else if (message.type === "GET_LEVEL") {
         response = await fetch(`${base}/levels/${message.payload.levelId}`);
         if (!response.ok) { sendResponse({ error: `API error ${response.status}` }); return; }

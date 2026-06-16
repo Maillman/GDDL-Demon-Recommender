@@ -36,3 +36,14 @@ class RecommendedLevel(BaseModel):
 
 class RecommendResponse(BaseModel):
     recommendations: list[RecommendedLevel]
+
+
+class MatchRequest(BaseModel):
+    user_beaten_ids: list[str] = []
+    user_skills: dict[str, float] = {}  # tag name -> normalized weight (0.0–1.0)
+
+
+class MatchResponse(BaseModel):
+    level: Level
+    score: float
+    reason: str

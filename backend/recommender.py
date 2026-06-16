@@ -4,7 +4,7 @@ import json
 import logging
 import numpy as np
 from embedder import embed_text
-from models import Level, RecommendedLevel, RecommendRequest
+from models import Level, MatchRequest, MatchResponse, RecommendedLevel, RecommendRequest
 import db
 
 logger = logging.getLogger(__name__)
@@ -103,6 +103,53 @@ def _make_reason(level: Level, request: RecommendRequest, max_tags: int = 3) -> 
     if request.level_id:
         return f"Similar to this level."
     return f"Similar skillset to your profile."
+
+
+def _make_match_reason(level: Level, request: MatchRequest, max_tags: int = 3) -> str:
+    top_tags = list(level.tags)[:max_tags]
+    matching = [t for t in top_tags if t in request.user_skills]
+    if matching:
+        return f"Your skills align with: {', '.join(matching)}."
+    if request.user_beaten_ids:
+        return "Similar skillset to your beaten levels."
+    return "No skill profile available for comparison."
+
+
+def match_level(level_id: str, request: MatchRequest) -> MatchResponse:
+    """Return how well a specific level matches the user's skill profile."""
+    result = db.get_by_ids([level_id])
+    embeddings = result.get("embeddings")
+    metadatas = result.get("metadatas") or []
+
+    if embeddings is None or not len(embeddings) or metadatas is None or not metadatas:
+        raise KeyError(level_id)
+
+    level = _metadata_to_level(level_id, metadatas[0])
+    level_vec = np.array(embeddings[0])
+
+    # Build a profile vector from beaten levels + skill distribution
+    profile_vecs: list[list[float]] = []
+    if request.user_beaten_ids:
+        beaten_result = db.get_by_ids(request.user_beaten_ids)
+        profile_vecs.extend(beaten_result.get("embeddings", []))
+    if request.user_skills:
+        words: list[str] = []
+        for tag_name, weight in request.user_skills.items():
+            words.extend([tag_name] * max(1, round(weight * 20)))
+        profile_vecs.append(embed_text(" ".join(words)))
+
+    if not profile_vecs:
+        profile_vecs.append(embed_text("demon level"))
+
+    profile_vec = np.mean(profile_vecs, axis=0)
+    denom = np.linalg.norm(profile_vec) * np.linalg.norm(level_vec)
+    score = float(np.dot(profile_vec, level_vec) / denom) if denom > 0 else 0.0
+
+    return MatchResponse(
+        level=level,
+        score=round(score, 4),
+        reason=_make_match_reason(level, request),
+    )
 
 
 def recommend(request: RecommendRequest) -> list[RecommendedLevel]:
