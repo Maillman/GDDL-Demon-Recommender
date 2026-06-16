@@ -51,12 +51,7 @@ def _build_query_vector(
                 words.extend([tag_name] * max(1, round(weight * 20)))
             vecs.append(embed_text(" ".join(words)))
     else:
-        # Profile mode: average embeddings of the user's beaten levels
-        if request.user_beaten_ids:
-            result = db.get_by_ids(request.user_beaten_ids)
-            vecs.extend(result.get("embeddings", []))
-
-        # Include the user's skill distribution
+        # Profile mode: Include the user's skill distribution
         if request.user_skills:
             words = []
             for tag_name, weight in request.user_skills.items():
@@ -110,8 +105,6 @@ def _make_match_reason(level: Level, request: MatchRequest, max_tags: int = 3) -
     matching = [t for t in top_tags if t in request.user_skills]
     if matching:
         return f"Your skills align with: {', '.join(matching)}."
-    if request.user_beaten_ids:
-        return "Similar skillset to your beaten levels."
     return "No skill profile available for comparison."
 
 
@@ -127,11 +120,8 @@ def match_level(level_id: str, request: MatchRequest) -> MatchResponse:
     level = _metadata_to_level(level_id, metadatas[0])
     level_vec = np.array(embeddings[0])
 
-    # Build a profile vector from beaten levels + skill distribution
+    # Build a profile vector from skill distribution
     profile_vecs: list[list[float]] = []
-    if request.user_beaten_ids:
-        beaten_result = db.get_by_ids(request.user_beaten_ids)
-        profile_vecs.extend(beaten_result.get("embeddings", []))
     if request.user_skills:
         words: list[str] = []
         for tag_name, weight in request.user_skills.items():

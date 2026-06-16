@@ -39,7 +39,6 @@ class RecommendResponse(BaseModel):
 
 
 class MatchRequest(BaseModel):
-    user_beaten_ids: list[str] = []
     user_skills: dict[str, float] = {}  # tag name -> normalized weight (0.0–1.0)
 
 

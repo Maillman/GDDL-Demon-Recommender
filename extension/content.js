@@ -139,7 +139,7 @@
 
     const matchPayload = {
       levelId,
-      body: { user_beaten_ids: beatenIds, user_skills: userSkills },
+      body: { user_skills: userSkills },
     };
 
     const [recommendResp, matchResp] = await Promise.all([
