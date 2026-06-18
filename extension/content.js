@@ -21,7 +21,7 @@
   }
 
   /** Find the element that should receive the panel. */
-  function findInjectionTarget() {
+  function findPanelInjectionTarget() {
     const main = document.querySelector("main");
     if (!main) {
       return null;
@@ -31,16 +31,22 @@
     return mainTarget.querySelectorAll("div")[0] || mainTarget;
   }
 
-  /** Wait for the target element to exist before mounting the panel. */
-  function waitForInjectionTarget(onReady) {
-    const target = findInjectionTarget();
+  /** Find the element that should receive the match result. */
+  function findMatchInjectionTarget() {
+    const firstDivTarget = findPanelInjectionTarget();
+    return firstDivTarget.querySelectorAll("div")[0] || firstDivTarget;
+  }
+
+  /** Wait for a target element (found by finderFn) to exist before calling onReady. */
+  function waitForInjectionTarget(finderFn, onReady) {
+    const target = finderFn();
     if (target) {
       onReady(target);
       return;
     }
 
     const observer = new MutationObserver(() => {
-      const nextTarget = findInjectionTarget();
+      const nextTarget = finderFn();
       if (!nextTarget) {
         return;
       }
@@ -61,24 +67,31 @@
     }, TARGET_WAIT_TIMEOUT_MS);
   }
 
-  /** Build the recommendation panel markup. */
-  function createPanel(recommendations, matchResult) {
-    const panel = document.createElement("div");
-    panel.id = PANEL_ID;
-
-    let matchBadge = "";
+  /** Build the match badge element. */
+  function createMatchBadge(matchResult) {
+    const wrapper = document.createElement("div");
+    wrapper.id = "gddl-match-badge-wrapper";
     if (matchResult) {
       const pct = (matchResult.score * 100).toFixed(0);
-      matchBadge = `
+      wrapper.innerHTML = `
         <div class="gddl-match-badge">
-          <span class="gddl-match-label">Skill Match</span>
-          <span class="gddl-match-score">${pct}%</span>
+          <div class="gddl-match-results">
+            <span class="gddl-match-label">Skill Match</span>
+            <span class="gddl-match-score">${pct}%</span>
+          </div>
           <span class="gddl-match-reason">${matchResult.reason}</span>
         </div>`;
     }
+    return wrapper;
+  }
+
+  /** Build the recommendation panel markup. */
+  function createPanel(recommendations) {
+    const panel = document.createElement("div");
+    panel.id = PANEL_ID;
 
     if (!recommendations || recommendations.length === 0) {
-      panel.innerHTML = `${matchBadge}<p class="gddl-empty">No recommendations found. Run a sync or adjust your filters.</p>`;
+      panel.innerHTML = `<p class="gddl-empty">No recommendations found. Run a sync or adjust your filters.</p>`;
       return panel;
     }
 
@@ -95,26 +108,36 @@
       .join("");
 
     panel.innerHTML = `
-      ${matchBadge}
       <h3 class="gddl-panel-title">Recommended Demons</h3>
       <div class="gddl-rec-list">${items}</div>`;
     return panel;
   }
 
-  /** Inject the recommendation panel into the page. */
+  /** Inject the recommendation panel and match badge into their separate targets. */
   function injectPanel(recommendations, matchResult) {
-    const panel = createPanel(recommendations, matchResult);
+    const panel = createPanel(recommendations);
+    const badge = createMatchBadge(matchResult);
 
-    waitForInjectionTarget((target) => {
+    waitForInjectionTarget(findPanelInjectionTarget, (target) => {
       const existing = document.getElementById(PANEL_ID);
       if (existing) existing.remove();
 
       if (!target.isConnected) {
         document.body.appendChild(panel);
-        return;
+      } else {
+        target.after(panel);
       }
+    });
 
-      target.after(panel);
+    waitForInjectionTarget(findMatchInjectionTarget, (target) => {
+      const existing = document.getElementById("gddl-match-badge-wrapper");
+      if (existing) existing.remove();
+
+      if (!target.isConnected) {
+        document.body.appendChild(badge);
+      } else {
+        target.after(badge);
+      }
     });
   }
 

@@ -60,18 +60,22 @@
 
 .gddl-match-badge {
   display: flex;
-  align-items: center;
-  gap: 10px;
+  flex-direction: column;
+  gap: 5px;
   padding: 10px 12px;
   margin-bottom: 14px;
-  background: #16213e;
-  border-left: 3px solid #a78bfa;
-  border-radius: 4px;
+}
+
+.gddl-match-results {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .gddl-match-label {
   font-size: 0.8rem;
-  color: #94a3b8;
+  font-weight: 600;
+  color: #000000;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -84,7 +88,7 @@
 
 .gddl-match-reason {
   font-size: 0.8rem;
-  color: #94a3b8;
+  color: #000000;
   margin-left: auto;
 }
 
