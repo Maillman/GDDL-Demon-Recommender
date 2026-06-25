@@ -113,36 +113,48 @@
     return panel;
   }
 
-  /** Inject the recommendation panel and match badge into their separate targets. */
+  /** Inject the recommendation panel and match badge into their separate targets.
+   *  Pass undefined for either argument to skip that injection entirely. */
   function injectPanel(recommendations, matchResult) {
-    const panel = createPanel(recommendations);
-    const badge = createMatchBadge(matchResult);
+    if (recommendations !== undefined) {
+      const panel = createPanel(recommendations);
+      waitForInjectionTarget(findPanelInjectionTarget, (target) => {
+        const existing = document.getElementById(PANEL_ID);
+        if (existing) existing.remove();
 
-    waitForInjectionTarget(findPanelInjectionTarget, (target) => {
-      const existing = document.getElementById(PANEL_ID);
-      if (existing) existing.remove();
+        if (!target.isConnected) {
+          document.body.appendChild(panel);
+        } else {
+          target.after(panel);
+        }
+      });
+    }
 
-      if (!target.isConnected) {
-        document.body.appendChild(panel);
-      } else {
-        target.after(panel);
-      }
-    });
+    if (matchResult !== undefined) {
+      const badge = createMatchBadge(matchResult);
+      waitForInjectionTarget(findMatchInjectionTarget, (target) => {
+        const existing = document.getElementById("gddl-match-badge-wrapper");
+        if (existing) existing.remove();
 
-    waitForInjectionTarget(findMatchInjectionTarget, (target) => {
-      const existing = document.getElementById("gddl-match-badge-wrapper");
-      if (existing) existing.remove();
-
-      if (!target.isConnected) {
-        document.body.appendChild(badge);
-      } else {
-        target.after(badge);
-      }
-    });
+        if (!target.isConnected) {
+          document.body.appendChild(badge);
+        } else {
+          target.after(badge);
+        }
+      });
+    }
   }
 
   /** Request recommendations and a skill-match score from the backend (via background.js). */
   async function fetchRecommendations(levelId) {
+    const settings = await new Promise((resolve) =>
+      chrome.storage.local.get(["showPanel", "showMatchBadge"], resolve)
+    );
+    const showPanel = settings.showPanel !== false;
+    const showMatchBadge = settings.showMatchBadge !== false;
+
+    if (!showPanel && !showMatchBadge) return;
+
     // Try to get the logged-in user's beaten levels and skills; falls back to empty if not logged in.
     let beatenIds = [];
     let userSkills = {};
@@ -152,35 +164,46 @@
       userSkills = userResp?.data?.skills ?? {};
     } catch (_) {}
 
-    const recommendPayload = {
-      level_id: levelId ?? null,
-      desired_tags: {},
-      limit: 10,
-      user_beaten_ids: beatenIds,
-      user_skills: userSkills,
-    };
+    const requests = [];
 
-    const matchPayload = {
-      levelId,
-      body: { user_skills: userSkills },
-    };
+    if (showPanel) {
+      const recommendPayload = {
+        level_id: levelId ?? null,
+        desired_tags: {},
+        limit: 10,
+        user_beaten_ids: beatenIds,
+        user_skills: userSkills,
+      };
+      requests.push(
+        new Promise((resolve) =>
+          chrome.runtime.sendMessage({ type: "RECOMMEND", payload: recommendPayload }, resolve)
+        )
+      );
+    } else {
+      requests.push(Promise.resolve(null));
+    }
 
-    const [recommendResp, matchResp] = await Promise.all([
-      new Promise((resolve) =>
-        chrome.runtime.sendMessage({ type: "RECOMMEND", payload: recommendPayload }, resolve)
-      ),
-      new Promise((resolve) =>
-        chrome.runtime.sendMessage({ type: "MATCH_LEVEL", payload: matchPayload }, resolve)
-      ),
-    ]);
+    if (showMatchBadge) {
+      const matchPayload = { levelId, body: { user_skills: userSkills } };
+      requests.push(
+        new Promise((resolve) =>
+          chrome.runtime.sendMessage({ type: "MATCH_LEVEL", payload: matchPayload }, resolve)
+        )
+      );
+    } else {
+      requests.push(Promise.resolve(null));
+    }
+
+    const [recommendResp, matchResp] = await Promise.all(requests);
 
     if (chrome.runtime.lastError) {
       console.warn("[GDDL Recommender] API error:", chrome.runtime.lastError);
       return;
     }
 
-    const recommendations = recommendResp?.data?.recommendations ?? [];
-    const matchResult = matchResp?.data ?? null;
+    // undefined = feature disabled (skip injection); null = enabled but no result
+    const recommendations = showPanel ? (recommendResp?.data?.recommendations ?? []) : undefined;
+    const matchResult = showMatchBadge ? (matchResp?.data ?? null) : undefined;
     injectPanel(recommendations, matchResult);
   }
 

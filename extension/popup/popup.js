@@ -34,10 +34,12 @@ const filtersLink      = document.getElementById("filters-link");
 const filtersPanel     = document.getElementById("filters-panel");
 const settingsLink     = document.getElementById("settings-link");
 const settingsPanel    = document.getElementById("settings-panel");
-const apiUrlInput      = document.getElementById("api-url-input");
-const saveUrlBtn       = document.getElementById("save-url-btn");
-const resetUrlBtn      = document.getElementById("reset-url-btn");
-const settingsStatus   = document.getElementById("settings-status");
+const apiUrlInput        = document.getElementById("api-url-input");
+const saveUrlBtn         = document.getElementById("save-url-btn");
+const resetUrlBtn        = document.getElementById("reset-url-btn");
+const settingsStatus     = document.getElementById("settings-status");
+const showPanelInput     = document.getElementById("show-panel-input");
+const showMatchBadgeInput = document.getElementById("show-match-badge-input");
 
 // --- Filters panel ---
 filtersLink.addEventListener("click", (e) => {
@@ -52,8 +54,10 @@ settingsLink.addEventListener("click", (e) => {
   const isHidden = settingsPanel.classList.toggle("hidden");
   settingsLink.textContent = isHidden ? "Settings" : "Hide Settings";
   if (!isHidden) {
-    chrome.storage.local.get("apiUrl", ({ apiUrl }) => {
-      apiUrlInput.value = apiUrl || DEFAULT_API_URL;
+    chrome.storage.local.get(["apiUrl", "showPanel", "showMatchBadge"], (data) => {
+      apiUrlInput.value = data.apiUrl || DEFAULT_API_URL;
+      showPanelInput.checked = data.showPanel !== false;
+      showMatchBadgeInput.checked = data.showMatchBadge !== false;
     });
   }
 });
@@ -75,6 +79,14 @@ resetUrlBtn.addEventListener("click", () => {
     setTimeout(() => { settingsStatus.textContent = ""; }, 2000);
     checkHealth();
   });
+});
+
+showPanelInput.addEventListener("change", () => {
+  chrome.storage.local.set({ showPanel: showPanelInput.checked });
+});
+
+showMatchBadgeInput.addEventListener("change", () => {
+  chrome.storage.local.set({ showMatchBadge: showMatchBadgeInput.checked });
 });
 
 // Open recommendation links in the currently active tab instead of creating a new one.
